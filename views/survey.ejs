@@ -1,0 +1,14 @@
+﻿<!DOCTYPE html>
+<html>
+  <head>
+    <title>问卷调查</title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+  </head>
+  <body>
+    <h1><%= result.name %></h1>
+    <p><%= result %></p>
+    <% result.questions.forEach(function(question) { %>
+        <% include question %>
+    <% }) %>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+﻿<div>
+    <div><%= question.title %></div>
+    <% if(question.items) { %>
+        <ul>
+        <% question.items.forEach(function(itemId) { %>
+            <% include item %>
+        <% }) %>
+        <ul>
+    <% } else { %>
+        <textarea cols="50" rows="10"></textarea>
+    <% } %>
+    <p/>
+</div>
