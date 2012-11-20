@@ -7,3 +7,6 @@
 
 # extjs #
 /ext-*/
+
+# nodejs #
+/node_modules/
