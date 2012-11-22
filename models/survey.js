@@ -38,7 +38,7 @@ var survey1 = {
     {
         id: 4,
         title: '问题4',
-        type: 'input'
+        type: 'textarea'
     }]
 };
 

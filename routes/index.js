@@ -8,7 +8,5 @@ exports.index = function(req, res){
 };
 
 exports.survey = function(req, res){
-  var result = Survey.get(req.params.id);
-  console.log(result);
-  res.render('survey', { result: result });
+  res.render('survey', { result: Survey.get(req.params.id) });
 };

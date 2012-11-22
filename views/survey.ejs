@@ -5,10 +5,11 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
+  <% if(result) { %>
     <h1><%= result.name %></h1>
-    <p><%= result %></p>
     <% result.questions.forEach(function(question) { %>
         <% include question %>
     <% }) %>
+  <% } %>
   </body>
 </html>

@@ -1,13 +1,16 @@
-﻿<div>
-    <div><%= question.title %></div>
-    <% if(question.items) { %>
-        <ul>
+﻿<div><%= question.title %></div>
+<div>
+    <% if(question.type == 'textarea') { %>
+        <textarea name="question_<%= question.id %>" cols="50" rows="10"></textarea>
+    <% } else if(question.type == 'select') { %>
+        <select name="question_<%= question.id %>">
+            <% question.items.forEach(function(itemId) { %>
+                <option value="<%= itemId %>"><%= result.items[itemId] %></option>
+            <% }) %>
+        </select>
+    <% } else { %>
         <% question.items.forEach(function(itemId) { %>
             <% include item %>
         <% }) %>
-        <ul>
-    <% } else { %>
-        <textarea cols="50" rows="10"></textarea>
     <% } %>
-    <p/>
 </div>
