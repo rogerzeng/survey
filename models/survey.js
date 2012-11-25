@@ -97,9 +97,19 @@ Survey.get = function(req, res) {
 	connection.end();
 };
 
-var survey1 = {
+Survey.get = function(req, res) {
+
+};
+
+/*
+var survey = {
     id: 1,
     name: '调查1',
+	
+	items: {
+		'1': '好',
+		'2': '不好'
+	},
     
     questions: [{
         id: 1,
@@ -125,10 +135,7 @@ var survey1 = {
         type: 'textarea'
     }]
 };
-
-survey1.items = {};
-survey1.items[1] = '好';
-survey1.items[2] = '不好';
+*/
 
 function handleDisconnect(connection) {
   connection.on('error', function(err) {

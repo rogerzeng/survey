@@ -10,3 +10,7 @@ exports.index = function(req, res){
 exports.survey = function(req, res){
 	Survey.get(req, res);
 };
+
+exports.survey = function(req, res){
+	Survey.submit(req, res);
+};
