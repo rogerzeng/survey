@@ -10,3 +10,6 @@
 
 # nodejs #
 /node_modules/
+
+# mysql EER diagram backup file #
+/sql/*.mwb.bak
