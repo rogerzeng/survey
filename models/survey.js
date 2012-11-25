@@ -97,8 +97,8 @@ Survey.get = function(req, res) {
 	connection.end();
 };
 
-Survey.get = function(req, res) {
-
+Survey.submit = function(req, res) {
+	res.send('Hello World');
 };
 
 /*

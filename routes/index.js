@@ -11,6 +11,6 @@ exports.survey = function(req, res){
 	Survey.get(req, res);
 };
 
-exports.survey = function(req, res){
+exports.submit = function(req, res){
 	Survey.submit(req, res);
 };
