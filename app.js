@@ -3,11 +3,23 @@
  * Module dependencies.
  */
 
+// TODO: move it to utilits
+Array.prototype.containsById = function(id) { 
+	var i = this.length;
+	while (i--) { 
+		if (!!id && this[i].id == id) {
+			return true; 
+		} 
+	} 
+	return false; 
+} 
+
 var express = require('express')
   , routes = require('./routes')
   , user = require('./routes/user')
   , http = require('http')
-  , path = require('path');
+  , path = require('path')
+  , flash = require('connect-flash');
 
 var app = express();
 
@@ -21,15 +33,28 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.cookieParser('your secret here'));
   app.use(express.session());
+  app.use(flash());
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
 });
 
 app.configure('development', function(){
-  app.use(express.errorHandler());
+    app.use(express.errorHandler({ dumpExceptions: true, showStack: true}));
+});
+app.configure('production', function(){
+    app.use(express.errorHandler());
+});
+
+app.use(function (req, res, next) {
+    console.log('################');
+    res.locals.success = req.flash('success');
+    res.locals.error = req.flash('error');
+    next();
 });
 
 app.get('/', routes.index);
+app.get('/success', routes.success);
+app.get('/error', routes.error);
 app.get('/users', user.list);
 
 app.get('/survey/:id', routes.survey);

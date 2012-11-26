@@ -1,5 +1,5 @@
 ﻿
-// TODO: var db = require('../db');
+var connection = require('./db');
 
 function Survey() {
 
@@ -7,20 +7,7 @@ function Survey() {
 
 module.exports = Survey;
 
-Survey.get = function(req, res) {
-	var id = req.params.id;
-    if(!id) return;
-	
-	var mysql      = require('mysql');
-	var connection = mysql.createConnection({
-	  host     : 'localhost',
-	  user     : 'root',
-	  password : 'root',
-	  database : 'survey'
-	});
-	
-	handleDisconnect(connection);
-
+Survey.get = function(id, callback) {
 	connection.connect();
 	
 	/*
@@ -38,7 +25,6 @@ Survey.get = function(req, res) {
 		where s.id = 1
 		order by q.id
 	*/
-	
 	var sql = 'select s.name survey_name, ' +
 				'q.id question_id, ' +
 				'q.desc question_desc, ' +
@@ -52,17 +38,15 @@ Survey.get = function(req, res) {
 				'left join item i on qi.item_id = i.id ' +
 				'where s.id = ? ' + 
 				'order by q.id';
-				
-				
-	  
-	var survey = {id: 1, items: {}, questions: []};
 
 	connection.query(sql, [id], function(err, rows, fields) {
 	  if (err) {
 		console.log(err);
 		connection.end();
-		return;
+		return callback(err);
 	  };
+	  
+	  var survey = {id: id, items: {}, questions: []};
 	  
 	  for(var i = 0; i < rows.length; i++) {
 		if(i == 0) {
@@ -91,14 +75,23 @@ Survey.get = function(req, res) {
 		}
 	  }
 	  
-	  res.render('survey', { result: survey });
+	  return callback(err, survey);
 	});
 
 	connection.end();
 };
 
-Survey.submit = function(req, res) {
-	res.send('Hello World');
+Survey.submit = function(req, callback) {
+
+	connection.connect();
+    
+    connection.query('select * from survey', function(err, rows, fields) {
+        console.log(rows);
+        
+        return callback(err);
+    });
+    
+    connection.end();
 };
 
 /*
@@ -136,29 +129,3 @@ var survey = {
     }]
 };
 */
-
-function handleDisconnect(connection) {
-  connection.on('error', function(err) {
-    if (!err.fatal || err.code !== 'PROTOCOL_CONNECTION_LOST') {
-	  console.log(err);
-	  connection.end();
-      return;
-    }
-
-    console.log('Re-connecting lost connection: ' + err.stack);
-
-    connection = mysql.createConnection(connection.config);
-    handleDisconnect(connection);
-    connection.connect();
-  });
-}
-
-Array.prototype.containsById = function(id) { 
-	var i = this.length;
-	while (i--) { 
-		if (!!id && this[i].id == id) {
-			return true; 
-		} 
-	} 
-	return false; 
-} 
