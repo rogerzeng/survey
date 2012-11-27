@@ -4,7 +4,7 @@ var Survey = require('../models/survey');
 // routers
 
 exports.index = function(req, res){
-    req.flash('success');
+    req.flash('success', 'a');
     req.flash('error', 'b');
 	res.render('index');
 };
@@ -20,6 +20,7 @@ exports.error = function(req, res){
 exports.survey = function(req, res){
 	Survey.get(req.params.id, function(err, survey) {
         if(err) {
+			console.log(err);
             req.flash('error', err);
             return res.redirect('error');
         }
@@ -31,6 +32,7 @@ exports.survey = function(req, res){
 exports.submit = function(req, res){
 	Survey.submit(req, function(err) {
         if(err) {
+			console.log(err);
             req.flash('error', err);
             return res.redirect('error');
         }

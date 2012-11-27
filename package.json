@@ -8,6 +8,7 @@
   "dependencies": {
     "express": "3.0.3",
     "ejs": "*",
-	"mysql": "2.0.0-alpha4"
+	"mysql": "2.0.0-alpha4",
+	"flashify": "0.1.0"
   }
 }

@@ -4,6 +4,8 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <%= locals.error %>
+    <% if(flash.error) { %>
+		<%= flash.error %>
+	<% } %>
   </body>
 </html>

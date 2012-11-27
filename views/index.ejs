@@ -4,6 +4,11 @@
     <link rel='stylesheet' href='/stylesheets/style.css' />
   </head>
   <body>
-    <%= locals.success %>
+    <% if(flash.success) { %>
+		<%= flash.success %>
+	<% } %>
+    <% if(flash.error) { %>
+		<%= flash.error %>
+	<% } %>
   </body>
 </html>

@@ -38,7 +38,7 @@ Survey.get = function(id, callback) {
 				'left join item i on qi.item_id = i.id ' +
 				'where s.id = ? ' + 
 				'order by q.id';
-
+				
 	connection.query(sql, [id], function(err, rows, fields) {
 	  if (err) {
 		console.log(err);

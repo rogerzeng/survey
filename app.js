@@ -19,7 +19,7 @@ var express = require('express')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
-  , flash = require('connect-flash');
+  , flashify = require('flashify');
 
 var app = express();
 
@@ -33,7 +33,7 @@ app.configure(function(){
   app.use(express.methodOverride());
   app.use(express.cookieParser('your secret here'));
   app.use(express.session());
-  app.use(flash());
+  app.use(flashify);
   app.use(app.router);
   app.use(express.static(path.join(__dirname, 'public')));
 });
@@ -44,14 +44,13 @@ app.configure('development', function(){
 app.configure('production', function(){
     app.use(express.errorHandler());
 });
-
+/*
 app.use(function (req, res, next) {
-    console.log('################');
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
     next();
 });
-
+*/
 app.get('/', routes.index);
 app.get('/success', routes.success);
 app.get('/error', routes.error);
