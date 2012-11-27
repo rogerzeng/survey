@@ -1,12 +1,5 @@
 var mysql = require('mysql');
 
-var connection = mysql.createConnection({
-  host : 'localhost',
-  user : 'root',
-  password : 'root',
-  database : 'survey'
-});
-
 function handleDisconnect(connection) {
   connection.on('error', function(err) {
     if (!err.fatal) {
@@ -25,6 +18,19 @@ function handleDisconnect(connection) {
   });
 };
 
-handleDisconnect(connection);
+function db() {};
 
-module.exports = connection;
+db.createConnection = function() {
+	var connection = mysql.createConnection({
+	  host : 'localhost',
+	  user : 'root',
+	  password : 'root',
+	  database : 'survey'
+	});
+	
+	handleDisconnect(connection);
+	
+	return connection;
+};
+
+module.exports = db;

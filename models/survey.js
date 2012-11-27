@@ -1,5 +1,5 @@
 ﻿
-var connection = require('./db');
+var db = require('./db');
 
 function Survey() {
 
@@ -8,6 +8,7 @@ function Survey() {
 module.exports = Survey;
 
 Survey.get = function(id, callback) {
+	var connection = db.createConnection();
 	connection.connect();
 	
 	/*
@@ -82,7 +83,7 @@ Survey.get = function(id, callback) {
 };
 
 Survey.submit = function(req, callback) {
-
+	var connection = db.createConnection();
 	connection.connect();
     
     connection.query('select * from survey', function(err, rows, fields) {
