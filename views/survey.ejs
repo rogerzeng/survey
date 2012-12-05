@@ -8,23 +8,24 @@
   <% if(result) { %>
     <h1><%= result.name %></h1>
 	<form action="submit" method="post">
+        <input type="hidden" name="surveyId" value="<%=result.id%>"/>
 		<div>
 			入学年份:
 			<select name="year">
 				<option value="2012">2012</option>
 				<option value="2012">2013</option>
 			</select>
-			<select name="grad">
+			<select name="grade">
 				<option value="0">预备班</option>
 				<option value="1">初一</option>
 			</select>
-			<select name="class">
+			<select name="classId">
 				<option value="1">1</option>
 				<option value="2">2</option>
 			</select>班
 		</div>
 		<div>
-			名字:<input type="input" name="name"/>
+			姓名:<input type="input" name="name"/>
 			学号:<input type="input" name="no"/>
 			性别:<select name="gender">
 				<option value="1">男</option>

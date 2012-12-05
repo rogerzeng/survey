@@ -101,6 +101,45 @@ CREATE  TABLE IF NOT EXISTS `survey`.`survey_question` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+
+-- Table `survey`.`survey_result`
+
+-- -----------------------------------------------------
+
+DROP TABLE IF EXISTS `survey`.`survey_result` ;
+
+CREATE  TABLE IF NOT EXISTS `survey`.`survey_result` (
+  `survey_id` INT NOT NULL ,
+  `question_id` INT NOT NULL ,
+  `item_id` INT NULL ,
+  `year` INT NOT NULL ,
+  `grade` INT NOT NULL ,
+  `class` INT NOT NULL ,
+  `no` VARCHAR(45) NOT NULL ,
+  `name` VARCHAR(45) NOT NULL ,
+  `shanghaining` INT NOT NULL ,
+  `desc` TEXT NULL ,
+  INDEX `fk_survey_result_nontext_question1_idx` (`question_id` ASC) ,
+  INDEX `fk_survey_result_nontext_item1_idx` (`item_id` ASC) ,
+  INDEX `fk_survey_result_nontext_survey1_idx` (`survey_id` ASC) ,
+  CONSTRAINT `fk_survey_result_nontext_survey1`
+    FOREIGN KEY (`survey_id` )
+    REFERENCES `survey`.`survey` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_survey_result_nontext_question1`
+    FOREIGN KEY (`question_id` )
+    REFERENCES `survey`.`question` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_survey_result_nontext_item1`
+    FOREIGN KEY (`item_id` )
+    REFERENCES `survey`.`item` (`id` )
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;

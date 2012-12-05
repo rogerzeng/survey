@@ -2,6 +2,8 @@ var mysql = require('mysql');
 
 function handleDisconnect(connection) {
   connection.on('error', function(err) {
+    console.log(err);
+  
     if (!err.fatal) {
       return;
     }
