@@ -50,8 +50,8 @@ VALUES
 (?,?,?,?,?,?,?,?,?,?)
 */                    
 Survey.RESULT_INSERT_SQL = 'INSERT INTO survey_result ' +
-                            '(survey_id,year,grade,class,no,name,shanghaining,question_id,item_id,desc) ' +
-                            'VALUES(?,?,?,?,?,?,?,?,?,?)';
+                            '(`survey_id`,`year`,`grade`,`class`,`no`,`name`,`shanghaining`,`question_id`,`item_id`,`desc`) ' +
+                            'VALUES ';
 
 module.exports = Survey;
 
@@ -103,17 +103,8 @@ Survey.get = function(id, callback) {
 
 Survey.submit = function(req, callback) {
     console.log(req.body);
-/*
-    var surveyId = req.body.surveyId;
-    var year = req.body.year;
-    var grade = req.body.grade;
-    var classId = req.body.classId;
-    var no = req.body.no;
-    var name = req.body.name;
-    var gender = req.body.gender;
-    var shanghaining = req.body.shanghaining;
-*/
-    var paramsTemplate = [req.body.surveyId, req.body.year, req.body.grade, req.body.classId, req.body.no, req.body.name, req.body.gender, req.body.shanghaining];
+    
+    var paramsTemplate = [parseInt(req.body.surveyId), parseInt(req.body.year), parseInt(req.body.grade), parseInt(req.body.classId), req.body.no, req.body.name, parseInt(req.body.shanghaining)];
     var paramsInsert = [];
     
     for(param in req.body) {
@@ -123,28 +114,28 @@ Survey.submit = function(req, callback) {
         
             // result[0] is the matched text, e.g. 'question_textarea_4'
             var questionType = result[1];
-            var questionId = result[2];
+            var questionId = parseInt(result[2]);
             if(questionType === 'textarea') {
                 paramsInsert.push(paramsTemplate.concat(questionId, null /*item_id*/, req.body[param] /*desc*/));
             } else if(questionType === 'checkbox' && req.body[param] instanceof Array) { // user selects multi-values
                 req.body[param].forEach(function(itemId) {
-                    paramsInsert.push(paramsTemplate.concat(questionId, itemId, null /*desc*/));
+                    paramsInsert.push(paramsTemplate.concat(questionId, parseInt(itemId), null /*desc*/));
                 });
             } else {
-                paramsInsert.push(paramsTemplate.concat(questionId, req.body[param] /*item_id*/, null /*desc*/));
+                paramsInsert.push(paramsTemplate.concat(questionId, parseInt(req.body[param]) /*item_id*/, null /*desc*/));
             }
         }
     }
 
     console.log(paramsInsert);
     
-    // TODO: paramsInsert.forEach() ? How should I do batch insert?
-
 	var connection = db.createConnection();
 	connection.connect();
+
+    var sql = Survey.RESULT_INSERT_SQL + connection.escape(paramsInsert);
+    console.log(sql);
     
-    connection.query('select 1', function(err, rows, fields) {
-        
+    connection.query(sql, function(err, result) {
         return callback(err);
     });
     
