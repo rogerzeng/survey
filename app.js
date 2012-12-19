@@ -15,8 +15,10 @@ Array.prototype.containsById = function(id) {
 } 
 
 var express = require('express')
+  , util = require('util')
   , routes = require('./routes')
   , user = require('./routes/user')
+  , management = require('./routes/management')
   , http = require('http')
   , path = require('path')
   , flashify = require('flashify');
@@ -49,21 +51,24 @@ app.configure('development', function(){
 app.configure('production', function(){
     app.use(express.errorHandler());
 });
-/*
-app.use(function (req, res, next) {
-    res.locals.success = req.flash('success');
-    res.locals.error = req.flash('error');
-    next();
+
+app.locals({
+    inspect: function(obj) {
+        return util.inspect(obj, false);
+    } 
 });
-*/
+
 app.get('/', routes.index);
 app.get('/success', routes.success);
 app.get('/error', routes.error);
 app.get('/users', user.list);
 
 app.get('/survey/:id', routes.survey);
-
 app.post('/survey/submit', routes.submit);
+
+app.get('/management/login', management.login);
+app.post('/management/login', management.doLogin);
+app.get('/management/list', management.list);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

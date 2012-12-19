@@ -56,15 +56,18 @@ Survey.RESULT_INSERT_SQL = 'INSERT INTO survey_result ' +
 module.exports = Survey;
 
 Survey.get = function(id, callback) {
+    console.log('Survey.get');
 	var connection = db.createConnection();
 	connection.connect();
 				
 	connection.query(Survey.SELECT_SQL, [id], function(err, rows, fields) {
+    
 	  if (err) {
 		console.log(err);
-		connection.end();
 		return callback(err);
-	  };
+	  } else if(rows.length == 0) {
+		return callback('错误的问卷编号');
+      }
 	  
 	  var survey = {id: id, items: {}, questions: []};
 	  
@@ -102,8 +105,7 @@ Survey.get = function(id, callback) {
 };
 
 Survey.submit = function(req, callback) {
-    console.log(req.body);
-    
+    console.log('Survey.submit');
     var paramsTemplate = [parseInt(req.body.surveyId), parseInt(req.body.year), parseInt(req.body.grade), parseInt(req.body.classId), req.body.no, req.body.name, parseInt(req.body.shanghaining)];
     var paramsInsert = [];
     

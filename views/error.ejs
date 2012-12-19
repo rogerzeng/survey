@@ -5,8 +5,8 @@
   </head>
   <body>
     系统错误，请联系管理员
-    <!--% if(flash.error) { %>
-		<%= flash.error %>
-	<% } %-->
+    <% if(flash.error) { %>
+		<%= inspect(flash.error) %>
+	<% } %>
   </body>
 </html>

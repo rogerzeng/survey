@@ -1,23 +1,37 @@
 ﻿
 var Survey = require('../models/survey');
 
+var filePath = 'survey\\routes\\index.js';
+
 // routers
 
 exports.index = function(req, res){
-    req.flash('success', 'a');
-    req.flash('error', 'b');
+    console.log(filePath + ' exports.index');
+    
 	res.render('index');
 };
 
 exports.success = function(req, res){
+    console.log(filePath + ' exports.success');
+    
     res.render('success');
 };
 
 exports.error = function(req, res){
+    console.log(filePath + ' exports.error');
+    
     res.render('error');
 };
 
 exports.survey = function(req, res){
+    console.log(filePath + ' exports.survey');
+    
+    // if survey id is not a number, then redirect to error page
+    if(isNaN(req.params.id)) {
+        req.flash('error', '错误的问卷编号');
+        return res.redirect('error');
+    }
+    
 	Survey.get(req.params.id, function(err, survey) {
         if(err) {
 			console.log(err);
@@ -30,6 +44,8 @@ exports.survey = function(req, res){
 };
 
 exports.submit = function(req, res){
+    console.log(filePath + ' exports.submit');
+    
 	Survey.submit(req, function(err) {
         if(err) {
 			console.log(err);
