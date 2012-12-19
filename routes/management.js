@@ -10,9 +10,9 @@ exports.login = function(req, res){
 exports.doLogin = function(req, res){
     console.log(filePath + ' exports.doLogin');
     
-    if(req.params.pwd == '123') {
+    if(req.body.pwd == '123') {
         req.session.login = true;
-        res.redirect('/management/list');
+        return res.redirect('/management/list');
     }
     
     res.redirect('/management/login');
