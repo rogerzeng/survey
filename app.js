@@ -68,6 +68,12 @@ app.post('/survey/submit', routes.submit);
 
 app.get('/management/login', management.login);
 app.post('/management/login', management.doLogin);
+
+// TODO: use regex instead of url
+app.get('/management/list', function(req, res, next) { // login check
+    if(!req.session.login) return res.redirect('/management/login');
+    next();
+});
 app.get('/management/list', management.list);
 
 http.createServer(app).listen(app.get('port'), function(){

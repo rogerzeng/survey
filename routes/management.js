@@ -4,7 +4,7 @@ var filePath = 'survey\\routes\\management.js';
 exports.login = function(req, res){
     console.log(filePath + ' exports.login');
     
-    res.render('login');
+    res.render('management/login');
 };
 
 exports.doLogin = function(req, res){
@@ -16,4 +16,10 @@ exports.doLogin = function(req, res){
     }
     
     res.redirect('/management/login');
+};
+
+exports.list = function(req, res){
+    console.log(filePath + ' exports.list');
+    
+    res.render('management/list');
 };
