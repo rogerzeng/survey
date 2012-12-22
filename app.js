@@ -69,12 +69,23 @@ app.post('/survey/submit', routes.submit);
 app.get('/management/login', management.login);
 app.post('/management/login', management.doLogin);
 
-// TODO: use regex instead of url
-app.get('/management/list', function(req, res, next) { // login check
-    if(!req.session.login) return res.redirect('/management/login');
+
+app.get('/management/*', function(req, res, next) { // login check
+    if(!req.session.login) {
+        if(req.xhr) { // ajax request
+            return res.send({login: false});
+        } else {
+            return res.redirect('/management/login');
+        }
+    }
+    
     next();
 });
+
+app.get('/management/test', management.test);
+
 app.get('/management/list', management.list);
+app.get('/management/surveys', management.surveys);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

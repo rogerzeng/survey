@@ -104,6 +104,55 @@ Survey.get = function(id, callback) {
 	connection.end();
 };
 
+Survey.getByName = function(name, callback) {
+    console.log('Survey.getByName');
+	var connection = db.createConnection();
+	connection.connect();
+    
+    var countSql = 'select count(*) from survey';
+    if (name) {
+        countSql = countSql + ' where name like ' + connection.escape('%' + name + '%');
+    }
+		
+	connection.query(countSql, function(err, rows, fields) {
+    
+    	if (err) {
+            console.log(err);
+    		return callback(err);
+    	}
+	  
+        var total = rows[0];
+      
+        if (total) {
+            var sql = 'select * from survey';
+            if (name) {
+                sql = sql + ' where name like ' + connection.escape('%' + name + '%');
+            }
+        
+            connection.query(sql, function(err, rows, fields) {
+                if (err) {
+                    console.log(err);
+            		return callback(err);
+            	}
+                
+                return callback(err, {
+                    success: true,
+                    total: total,
+                    rows: rows
+                });
+            });
+        } else {
+            return callback(err, {
+                success: true,
+                total: 0,
+                rows: []
+            });
+        }
+        
+        connection.end();
+	});
+};
+
 Survey.submit = function(req, callback) {
     console.log('Survey.submit');
     var paramsTemplate = [parseInt(req.body.surveyId), parseInt(req.body.year), parseInt(req.body.grade), parseInt(req.body.classId), req.body.no, req.body.name, parseInt(req.body.shanghaining)];

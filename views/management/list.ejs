@@ -1,7 +1,98 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
   <head>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel="stylesheet" type="text/css" href="/javascripts/ext-4.1.1a/resources/css/ext-all.css">
+    <script type="text/javascript" src="/javascripts/ext-4.1.1a/ext-debug.js"></script>
+    <script type="text/javascript">
+        Ext.onReady(function(){
+            var store = Ext.create('Ext.data.Store', {
+                id:'survey',
+                autoLoad: true,
+                fields:['id', 'name'],
+                pageSize: 3, // items per page
+                proxy: {
+                    type: 'ajax',
+                    url: '/management/surveys',  // url that will load data with respect to start and limit params
+                    reader: {
+                        type: 'json',
+                        root: 'rows',
+                        totalProperty: 'total'
+                    }
+                }
+            });
+        
+            Ext.create('Ext.panel.Panel', {
+                width: '100%',
+                height: 400,
+                renderTo: Ext.getBody(),
+                layout: {
+                    type: 'vbox',       // Arrange child items vertically
+                    align: 'stretch',    // Each takes up full width
+                    padding: 5
+                },
+                items: [{                    // Details Panel specified as a config object (no xtype defaults to 'panel').
+                    title: '问卷管理系统',
+                    bodyPadding: 5,
+                    items: [{
+                        itemId: 'surveyName',
+                        fieldLabel: '问卷名称',
+                        xtype: 'textfield'
+                    },{
+                        text: '测试',
+                        xtype: 'button',
+                        handler: function() {
+                            Ext.Ajax.request({
+                                url: '/management/test',
+                                method: 'GET',
+                                params: {
+                                    id: 1
+                                },
+                                success: function(response){
+                                    var text = response.responseText;
+                                    alert(text);
+                                }
+                            });
+                        }
+                    },{
+                        text: '查询',
+                        xtype: 'button',
+                        handler: function() {
+                            store.reload({
+                                params: {
+                                    surveyName: this.up().getComponent('surveyName').getValue()
+                                },
+                                scope: this
+                            });
+                        }
+                    }], // An array of form fields
+                    flex: 1             // Use 1/4 of Container's height (hint to Box layout)
+                },{
+                    xtype: 'splitter'   // A splitter between the two child items
+                },{               // Results grid specified as a config object with an xtype of 'grid'
+                    xtype: 'grid',
+                    columns: [{text: '编号',  dataIndex: 'id'},{text: '名称',  dataIndex: 'name'}],
+                    store: store, // A dummy empty data store
+                    dockedItems: [{
+                        xtype: 'toolbar',
+                        dock: 'top',
+                        items: [{
+                            text: '修改',
+                            scope: this,
+                            handler: function() {
+                                alert(1);
+                            }
+                        }]
+                    },{
+                        xtype: 'pagingtoolbar',
+                        store: store,   // same store GridPanel is using
+                        dock: 'bottom',
+                        displayInfo: true
+                    }],
+                    flex: 3                                       // Use 3/4 of Container's height (hint to Box layout)
+                }]
+            });
+        });
+    </script>
   </head>
   <body>
     <div>
