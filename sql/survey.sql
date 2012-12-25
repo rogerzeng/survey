@@ -212,24 +212,21 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
 
-INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷1');
-INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷2');
-INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷3');
-INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷4');
+INSERT INTO `survey`.`survey`(`id`, `name`) VALUES (1, '问卷1');
 
-INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'radio', '单选题');
-INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'checkbox', '多选题');
-INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'select', '下拉框');
-INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'textarea', '文本框');
+INSERT INTO `survey`.`question`(`id`, `s_id`, `type`, `desc`) VALUES (1, 1, 'radio', '单选题');
+INSERT INTO `survey`.`question`(`id`, `s_id`, `type`, `desc`) VALUES (2, 1, 'checkbox', '多选题');
+INSERT INTO `survey`.`question`(`id`, `s_id`, `type`, `desc`) VALUES (3, 1, 'select', '下拉框');
+INSERT INTO `survey`.`question`(`id`, `s_id`, `type`, `desc`) VALUES (4, 1, 'textarea', '文本框');
 
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (1,'选项1');
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (1,'选项2');
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (1,'选项3');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (1, 1,'选项1');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (2, 1,'选项2');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (3, 1,'选项3');
 
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (2,'选项a');
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (2,'选项b');
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (2,'选项c');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (4, 2,'选项a');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (5, 2,'选项b');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (6, 2,'选项c');
 
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (3,'选项x');
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (3,'选项y');
-INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (3,'选项z');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (7, 3,'选项x');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (8, 3,'选项y');
+INSERT INTO `survey`.`item`(`id`, `q_id`, `desc`) VALUES (9, 3,'选项z');

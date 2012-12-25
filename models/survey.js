@@ -55,7 +55,9 @@ Survey.get = function(id, callback) {
     console.log('Survey.get');
 	var connection = db.createConnection();
 	connection.connect();
-				
+	
+    console.log(Survey.SELECT_SQL);
+    
 	connection.query(Survey.SELECT_SQL, [id], function(err, rows, fields) {
     
 	  if (err) {
@@ -110,6 +112,8 @@ Survey.query = function(req, callback) {
     if (name) {
         countSql += ' where name like ' + connection.escape('%' + name + '%');
     }
+    
+    console.log(countSql);
 		
 	connection.query(countSql, function(err, rows, fields) {
     
@@ -135,7 +139,7 @@ Survey.query = function(req, callback) {
             sql += orderBy;
             sql += pagination;
             
-            console.log(sql)
+            console.log(sql);
         
             connection.query(sql, function(err, rows, fields) {
             
@@ -194,6 +198,7 @@ Survey.submit = function(req, callback) {
 	connection.connect();
 
     var sql = Survey.RESULT_INSERT_SQL + connection.escape(paramsInsert);
+    
     console.log(sql);
     
     connection.query(sql, function(err, result) {
@@ -213,7 +218,10 @@ Survey.create = function(name, callback) {
 	var connection = db.createConnection();
 	connection.connect();
     
-    connection.query('insert into survey set ?', {name: name}, function(err, result) {
+    var sql = 'insert into survey set ?';
+    console.log(sql);
+    
+    connection.query(sql, {name: name}, function(err, result) {
     
     	if (err) {
             console.log(err);
@@ -231,7 +239,10 @@ Survey.delete = function(id, callback) {
 	var connection = db.createConnection();
 	connection.connect();
     
-    connection.query('delete from survey where id = ?', [id], function(err, result) {
+    var sql = 'delete from survey where id = ?';
+    console.log(sql);
+    
+    connection.query(sql, [id], function(err, result) {
     
     	if (err) {
             console.log(err);
