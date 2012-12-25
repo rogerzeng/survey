@@ -13,10 +13,8 @@ q.type question_type,
 i.id item_id,
 i.desc item_desc
 from survey s 
-left join survey_question sq on s.id = sq.survey_id 
-left join question q on sq.question_id = q.id
-left join question_item qi on q.id = qi.question_id
-left join item i on qi.item_id = i.id
+left join question q on s.id = q.s_id
+left join item i on q.id = i.q_id
 where s.id = 1
 order by q.id
 */
@@ -27,10 +25,8 @@ Survey.SELECT_SQL = 'select s.name survey_name, ' +
     				'i.id item_id, ' +
     				'i.desc item_desc ' +
     				'from survey s ' +
-    				'left join survey_question sq on s.id = sq.survey_id ' +
-    				'left join question q on sq.question_id = q.id ' +
-    				'left join question_item qi on q.id = qi.question_id ' +
-    				'left join item i on qi.item_id = i.id ' +
+    				'left join question q on s.id = q.s_id ' +
+    				'left join item i on q.id = i.q_id ' +
     				'where s.id = ? ' + 
     				'order by q.id';
 

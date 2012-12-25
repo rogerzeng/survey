@@ -54,13 +54,27 @@ CREATE  TABLE IF NOT EXISTS `survey`.`question` (
 
   `id` INT NOT NULL AUTO_INCREMENT ,
 
-  `desc` VARCHAR(255) NULL ,
+  `s_id` INT NOT NULL ,
 
   `type` VARCHAR(45) NOT NULL ,
 
+  `desc` VARCHAR(255) NULL ,
+
   PRIMARY KEY (`id`) ,
 
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC) )
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) ,
+
+  INDEX `fk_question_survey1_idx` (`s_id` ASC) ,
+
+  CONSTRAINT `fk_question_survey1`
+
+    FOREIGN KEY (`s_id` )
+
+    REFERENCES `survey`.`survey` (`id` )
+
+    ON DELETE CASCADE
+
+    ON UPDATE NO ACTION)
 
 ENGINE = InnoDB;
 
@@ -82,101 +96,23 @@ CREATE  TABLE IF NOT EXISTS `survey`.`item` (
 
   `id` INT NOT NULL AUTO_INCREMENT ,
 
+  `q_id` INT NOT NULL ,
+
   `desc` VARCHAR(255) NOT NULL ,
 
   PRIMARY KEY (`id`) ,
 
-  UNIQUE INDEX `id_UNIQUE` (`id` ASC) )
+  UNIQUE INDEX `id_UNIQUE` (`id` ASC) ,
 
-ENGINE = InnoDB;
+  INDEX `fk_item_question1_idx` (`q_id` ASC) ,
 
+  CONSTRAINT `fk_item_question1`
 
-
-
-
--- -----------------------------------------------------
-
--- Table `survey`.`question_item`
-
--- -----------------------------------------------------
-
-DROP TABLE IF EXISTS `survey`.`question_item` ;
-
-
-
-CREATE  TABLE IF NOT EXISTS `survey`.`question_item` (
-
-  `question_id` INT NOT NULL ,
-
-  `item_id` INT NOT NULL ,
-
-  PRIMARY KEY (`question_id`, `item_id`) ,
-
-  INDEX `fk_question_item_item1_idx` (`item_id` ASC) ,
-
-  CONSTRAINT `fk_question_item_question`
-
-    FOREIGN KEY (`question_id` )
+    FOREIGN KEY (`q_id` )
 
     REFERENCES `survey`.`question` (`id` )
 
-    ON DELETE NO ACTION
-
-    ON UPDATE NO ACTION,
-
-  CONSTRAINT `fk_question_item_item1`
-
-    FOREIGN KEY (`item_id` )
-
-    REFERENCES `survey`.`item` (`id` )
-
-    ON DELETE NO ACTION
-
-    ON UPDATE NO ACTION)
-
-ENGINE = InnoDB;
-
-
-
-
-
--- -----------------------------------------------------
-
--- Table `survey`.`survey_question`
-
--- -----------------------------------------------------
-
-DROP TABLE IF EXISTS `survey`.`survey_question` ;
-
-
-
-CREATE  TABLE IF NOT EXISTS `survey`.`survey_question` (
-
-  `survey_id` INT NOT NULL ,
-
-  `question_id` INT NOT NULL ,
-
-  PRIMARY KEY (`survey_id`, `question_id`) ,
-
-  INDEX `fk_survey_question_question1_idx` (`question_id` ASC) ,
-
-  CONSTRAINT `fk_survey_question_survey1`
-
-    FOREIGN KEY (`survey_id` )
-
-    REFERENCES `survey`.`survey` (`id` )
-
-    ON DELETE NO ACTION
-
-    ON UPDATE NO ACTION,
-
-  CONSTRAINT `fk_survey_question_question1`
-
-    FOREIGN KEY (`question_id` )
-
-    REFERENCES `survey`.`question` (`id` )
-
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
 
     ON UPDATE NO ACTION)
 
@@ -236,7 +172,7 @@ CREATE  TABLE IF NOT EXISTS `survey`.`survey_result` (
 
     REFERENCES `survey`.`survey` (`id` )
 
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
 
     ON UPDATE NO ACTION,
 
@@ -246,7 +182,7 @@ CREATE  TABLE IF NOT EXISTS `survey`.`survey_result` (
 
     REFERENCES `survey`.`question` (`id` )
 
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
 
     ON UPDATE NO ACTION,
 
@@ -256,7 +192,7 @@ CREATE  TABLE IF NOT EXISTS `survey`.`survey_result` (
 
     REFERENCES `survey`.`item` (`id` )
 
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
 
     ON UPDATE NO ACTION)
 
@@ -275,25 +211,25 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
-INSERT INTO `survey`.`survey` (`name`) VALUES ('调查问卷1');
 
-INSERT INTO `survey`.`question` (`desc`, `type`) VALUES ('问题1', 'radio');
-INSERT INTO `survey`.`question` (`desc`, `type`) VALUES ('问题2', 'checkbox');
-INSERT INTO `survey`.`question` (`desc`, `type`) VALUES ('问题3', 'select');
-INSERT INTO `survey`.`question` (`desc`, `type`) VALUES ('问题4', 'textarea');
+INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷1');
+INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷2');
+INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷3');
+INSERT INTO `survey`.`survey`(`name`) VALUES ('问卷4');
 
-INSERT INTO `survey`.`item` (`desc`) VALUES ('好');
-INSERT INTO `survey`.`item` (`desc`) VALUES ('不好');
+INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'radio', '单选题');
+INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'checkbox', '多选题');
+INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'select', '下拉框');
+INSERT INTO `survey`.`question`(`s_id`, `type`, `desc`) VALUES (1, 'textarea', '文本框');
 
-INSERT INTO `survey`.`question_item` (`question_id`, `item_id`) VALUES (1, 1);
-INSERT INTO `survey`.`question_item` (`question_id`, `item_id`) VALUES (1, 2);
-INSERT INTO `survey`.`question_item` (`question_id`, `item_id`) VALUES (2, 1);
-INSERT INTO `survey`.`question_item` (`question_id`, `item_id`) VALUES (2, 2);
-INSERT INTO `survey`.`question_item` (`question_id`, `item_id`) VALUES (3, 1);
-INSERT INTO `survey`.`question_item` (`question_id`, `item_id`) VALUES (3, 2);
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (1,'选项1');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (1,'选项2');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (1,'选项3');
 
-INSERT INTO `survey`.`survey_question` (`survey_id`, `question_id`) VALUES ('1', '1');
-INSERT INTO `survey`.`survey_question` (`survey_id`, `question_id`) VALUES ('1', '2');
-INSERT INTO `survey`.`survey_question` (`survey_id`, `question_id`) VALUES ('1', '3');
-INSERT INTO `survey`.`survey_question` (`survey_id`, `question_id`) VALUES ('1', '4');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (2,'选项a');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (2,'选项b');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (2,'选项c');
 
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (3,'选项x');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (3,'选项y');
+INSERT INTO `survey`.`item`(`q_id`, `desc`) VALUES (3,'选项z');
