@@ -1,14 +1,19 @@
 ﻿<!DOCTYPE html>
 <html>
   <head>
+    <!-- Ensure we're using UTF-8 -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="/javascripts/ext-4.1.1a/resources/css/ext-all.css">
-    <script type="text/javascript" src="/javascripts/ext-4.1.1a/ext-debug.js"></script>
+    <script type="text/javascript" src="/javascripts/ext-4.1.1a/ext-all-dev.js"></script>
+    <!-- Include the translations -->
+    <script type="text/javascript" src="/javascripts/ext-4.1.1a/locale/ext-lang-zh_CN.js"></script>
     <script type="text/javascript">
+        var opFailure = '操作失败';
+    
         Ext.onReady(function(){
             var store = Ext.create('Ext.data.Store', {
-                id:'survey',
                 autoLoad: true,
-                fields:['id', 'name'],
+                fields: ['id', 'name'],
                 pageSize: 3, // items per page
                 proxy: {
                     type: 'ajax',
@@ -60,8 +65,7 @@
                             store.reload({
                                 params: {
                                     surveyName: this.up().getComponent('surveyName').getValue()
-                                },
-                                scope: this
+                                }
                             });
                         }
                     }], // An array of form fields
@@ -70,16 +74,77 @@
                     xtype: 'splitter'   // A splitter between the two child items
                 },{               // Results grid specified as a config object with an xtype of 'grid'
                     xtype: 'grid',
+                    itemId: 'surveyGrid',
                     columns: [{text: '编号',  dataIndex: 'id'},{text: '名称',  dataIndex: 'name'}],
                     store: store, // A dummy empty data store
                     dockedItems: [{
                         xtype: 'toolbar',
                         dock: 'top',
                         items: [{
-                            text: '修改',
-                            scope: this,
+                            text: '新增',
                             handler: function() {
-                                alert(1);
+                                Ext.Msg.prompt('新增', '请输入问卷名称', function(btn, text) {
+                                    if (btn == 'ok' && text){
+                                        Ext.Ajax.request({
+                                            url: '/management/createSurvey',
+                                            params: {name: text},
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    store.reload();
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                }
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        },{
+                            text: '修改',
+                            handler: function() {
+                                var grid = this.up().up();
+                                if(grid.getSelectionModel().hasSelection()) {
+                                    Ext.Msg.alert('', grid.getSelectionModel().getSelection()[0].get('id'));
+                                }
+                                
+                            }
+                        },{
+                            text: '删除',
+                            handler: function() {
+                                var grid = this.up().up();
+                                if(!grid.getSelectionModel().hasSelection()) {
+                                    Ext.Msg.alert('删除', '请选择要删除的问卷');
+                                    return;
+                                }
+                            
+                                Ext.MessageBox.confirm('删除', '删除问卷会同时删除统计结果，确认要继续么？', function(btn) {
+                                    if (btn == 'yes') {
+                                        var myMask = new Ext.LoadMask(Ext.getBody(), {msg:"请稍候..."});
+                                        myMask.show();
+                                    
+                                        Ext.Ajax.request({
+                                            url: '/management/deleteSurvey',
+                                            params: {id: grid.getSelectionModel().getSelection()[0].get('id')},
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    store.reload();
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                }
+                                                myMask.hide();
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                                myMask.hide();
+                                            }
+                                        });
+                                    }
+                                });
                             }
                         }]
                     },{
@@ -95,10 +160,8 @@
     </script>
   </head>
   <body>
-    <div>
-        <% if(flash.error) { %>
-            <%= flash.error %>
-        <% } %>
+    <div align="right">
+        <a href="/management/login">重新登录</a>
     </div>
   </body>
 </html>

@@ -29,7 +29,7 @@ exports.list = function(req, res){
 exports.surveys = function(req, res){
     console.log(filePath + ' exports.surveys');
     
-	Survey.getByName(req.query.surveyName, function(err, result) {
+	Survey.query(req, function(err, result) {
         if(err) {
 			console.log(err);
             req.flash('error', err);
@@ -38,8 +38,36 @@ exports.surveys = function(req, res){
         
         res.send(result);
     });
+};
+
+exports.createSurvey = function(req, res){
+    console.log(filePath + ' exports.createSurvey');
     
+	Survey.create(req.body.name, function(err, result) {
+        if(err) {
+			console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.deleteSurvey = function(req, res){
+    console.log(filePath + ' exports.deleteSurvey');
     
+	Survey.delete(req.body.id, function(err, result) {
+        if(err) {
+			console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        console.log(result);
+        
+        res.send(result);
+    });
 };
 
 exports.test = function(req, res){
@@ -47,5 +75,6 @@ exports.test = function(req, res){
     
     req.session.login = false;
     
-    res.send(req.session.login);
+    res.render('management/test');
+    //res.send(req.session.login);
 };

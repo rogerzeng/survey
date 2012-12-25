@@ -69,7 +69,7 @@ Survey.get = function(id, callback) {
 		return callback('错误的问卷编号');
       }
 	  
-	  var survey = {id: id, items: {}, questions: []};
+	  var survey = {id: id, questions: []};
 	  
 	  for(var i = 0; i < rows.length; i++) {
 		if(i == 0) {
@@ -90,11 +90,10 @@ Survey.get = function(id, callback) {
 		
 		var itemId = rows[i].item_id;
 		if(!!itemId) { // if has item_id in row, add it to question
-			question.items.push(itemId);
-			
-			if(!survey.items[itemId]) { // if it is not in survey yet, add it
-				survey.items[itemId] = rows[i].item_desc;
-			}
+			question.items.push({
+                id: itemId,
+                desc: rows[i].item_desc
+            });
 		}
 	  }
 	  
@@ -104,34 +103,49 @@ Survey.get = function(id, callback) {
 	connection.end();
 };
 
-Survey.getByName = function(name, callback) {
-    console.log('Survey.getByName');
+Survey.query = function(req, callback) {
+    console.log('Survey.query');
 	var connection = db.createConnection();
 	connection.connect();
     
-    var countSql = 'select count(*) from survey';
+    var name = req.query.surveyName;
+    
+    var countSql = 'select count(*) as total from survey';
     if (name) {
-        countSql = countSql + ' where name like ' + connection.escape('%' + name + '%');
+        countSql += ' where name like ' + connection.escape('%' + name + '%');
     }
 		
 	connection.query(countSql, function(err, rows, fields) {
     
     	if (err) {
             console.log(err);
+            connection.end(); // connection.end() here b/c logic returns here and won't get to the bottom point of connection.end()
     		return callback(err);
     	}
 	  
-        var total = rows[0];
+        var total = rows[0].total;
       
         if (total) {
+            var start = req.query.start;
+            var limit = req.query.limit;
+        
             var sql = 'select * from survey';
+            var orderBy = ' order by id desc'
+            var pagination = ' limit ' + start + ', ' + limit;
+            
             if (name) {
-                sql = sql + ' where name like ' + connection.escape('%' + name + '%');
+                sql += ' where name like ' + connection.escape('%' + name + '%');
             }
+            sql += orderBy;
+            sql += pagination;
+            
+            console.log(sql)
         
             connection.query(sql, function(err, rows, fields) {
+            
                 if (err) {
                     console.log(err);
+                    // no connection.end() here b/c connection should be closed at the same level as innerest connection.query() level
             		return callback(err);
             	}
                 
@@ -187,44 +201,49 @@ Survey.submit = function(req, callback) {
     console.log(sql);
     
     connection.query(sql, function(err, result) {
+    
+    	if (err) {
+            console.log(err);
+    	}
+        
         return callback(err);
     });
     
     connection.end();
 };
 
-/*
-var survey = {
-    id: 1,
-    name: '调查1',
-	
-	items: {
-		'1': '好',
-		'2': '不好'
-	},
+Survey.create = function(name, callback) {
+    console.log('Survey.create');
+	var connection = db.createConnection();
+	connection.connect();
     
-    questions: [{
-        id: 1,
-        desc: '问题1',
-        type: 'radio',
-        items: [1,2],
-    },
-    {
-        id: 2,
-        desc: '问题2',
-        type: 'checkbox',
-        items: [1,2],
-    },
-    {
-        id: 3,
-        desc: '问题3',
-        type: 'select',
-        items: [1,2],
-    },
-    {
-        id: 4,
-        desc: '问题4',
-        type: 'textarea'
-    }]
+    connection.query('insert into survey set ?', {name: name}, function(err, result) {
+    
+    	if (err) {
+            console.log(err);
+            return callback(err);
+    	}
+        
+    	return callback(err, {success: true, id: result.insertId});
+    });
+    
+    connection.end();
 };
-*/
+
+Survey.delete = function(id, callback) {
+    console.log('Survey.delete');
+	var connection = db.createConnection();
+	connection.connect();
+    
+    connection.query('delete from survey where id = ?', [id], function(err, result) {
+    
+    	if (err) {
+            console.log(err);
+            return callback(err);
+    	}
+        
+    	return callback(err, {success: true});
+    });
+    
+    connection.end();
+};

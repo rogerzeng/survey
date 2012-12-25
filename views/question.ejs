@@ -4,12 +4,12 @@
         <textarea name="question_<%= question.type %>_<%= question.id %>" cols="50" rows="10"></textarea>
     <% } else if(question.type == 'select') { %>
         <select name="question_<%= question.type %>_<%= question.id %>">
-            <% question.items.forEach(function(itemId) { %>
-                <option value="<%= itemId %>"><%= result.items[itemId] %></option>
+            <% question.items.forEach(function(item) { %>
+                <option value="<%= item.id %>"><%= item.desc %></option>
             <% }) %>
         </select>
     <% } else { %>
-        <% question.items.forEach(function(itemId) { %>
+        <% question.items.forEach(function(item) { %>
             <% include item %>
         <% }) %>
     <% } %>

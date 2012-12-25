@@ -69,7 +69,7 @@ app.post('/survey/submit', routes.submit);
 app.get('/management/login', management.login);
 app.post('/management/login', management.doLogin);
 
-
+/*
 app.get('/management/*', function(req, res, next) { // login check
     if(!req.session.login) {
         if(req.xhr) { // ajax request
@@ -81,11 +81,15 @@ app.get('/management/*', function(req, res, next) { // login check
     
     next();
 });
+*/
 
 app.get('/management/test', management.test);
 
 app.get('/management/list', management.list);
 app.get('/management/surveys', management.surveys);
+app.post('/management/createSurvey', management.createSurvey);
+app.post('/management/deleteSurvey', management.deleteSurvey);
+
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
