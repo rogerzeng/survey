@@ -59,7 +59,7 @@ exports.createSurvey = function(req, res){
 exports.readSurvey = function(req, res){
     console.log(filePath + ' exports.readSurvey');
     
-	Survey.get(req.body.id, function(err, survey) {
+	Survey.get(req.body, function(err, survey) {
         if(err) {
 			console.log(err);
             req.flash('error', err);
@@ -92,6 +92,20 @@ exports.deleteSurvey = function(req, res){
     console.log(filePath + ' exports.deleteSurvey');
     
 	Survey.delete(req.body.id, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.openSurvey = function(req, res){
+    console.log(filePath + ' exports.openSurvey');
+    
+	Survey.open(req.body.id, function(err, result) {
         if(err) {
             console.log(err);
             req.flash('error', err);
@@ -189,8 +203,8 @@ exports.deleteItem = function(req, res){
 exports.test = function(req, res){
     console.log(filePath + ' exports.test');
     
-    req.session.login = false;
+    console.log(req.body);
     
-    res.render('management/test');
-    //res.send(req.session.login);
+    //res.render('management/test');
+    res.send({success: true, msg: 'aaa'});
 };

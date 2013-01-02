@@ -1,14 +1,216 @@
 ﻿<!DOCTYPE html>
 <html>
   <head>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <!-- Ensure we're using UTF-8 -->
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="/javascripts/ext-4.1.1a/resources/css/ext-all.css">
+    <script type="text/javascript" src="/javascripts/ext-4.1.1a/ext-all-dev.js"></script>
+    <!-- Include the translations -->
+    <script type="text/javascript" src="/javascripts/ext-4.1.1a/locale/ext-lang-zh_CN.js"></script>
+    <script type="text/javascript">
+        Ext.onReady(function() {
+            var year = (new Date()).getFullYear();
+            var years = [];
+            for(var i = 0; i < 10; i++) {
+                years.push(year - i);
+            }
+        
+            Ext.Ajax.request({
+                url: '/online/readSurvey',
+                params: {online: 1},
+                success: function(response, opts) {
+                    var result = Ext.decode(response.responseText);
+                    if(result.success) {
+                        var survey = result.survey;
+                    
+                        var surveyPanel = Ext.create('Ext.form.Panel', {
+                            renderTo: Ext.getBody(),
+                            title: survey.name,
+                            url: '/online/submit',
+                            bodyPadding: 5,
+                            fieldDefaults: {
+                                // anchor: '100%',
+                                hideLabel: true,
+                                allowBlank: false
+                            },
+                            buttons: [{
+                                text: '提交',
+                                align: 'center',
+                                //formBind: true, //only enabled once the form is valid
+                                handler: function(){
+                                    var form = this.up('form').getForm();
+                                    if (form.isValid()) {
+                                        form.submit({
+                                            success: function(form, action) {
+                                               Ext.Msg.alert('Success', action.result.msg);
+                                            },
+                                            failure: function(form, action) {
+                                                Ext.Msg.alert('Failed', action.result.error);
+                                            }
+                                        });
+                                    }
+                                }
+                            }]
+                        });
+                        
+                        
+                        Ext.suspendLayouts();
+                            surveyPanel.add({
+                                xtype: 'container',
+                                layout: 'hbox',
+                                defaults: {
+                                    hideLabel: false,
+                                    labelAlign: 'right',
+                                    labelSeparator: '',
+                                    padding: 5
+                                },
+                                items: [{
+                                    xtype: 'combo',
+                                    name: 'year',
+                                    fieldLabel: '入学年份',
+                                    editable: false,
+                                    labelWidth: 50,
+                                    width: 120,
+                                    store: years,
+                                    queryMode: 'local'
+                                },{
+                                    xtype: 'combo',
+                                    name: 'grade',
+                                    hideLabel: true,
+                                    editable: false,
+                                    width: 50,
+                                    store: [
+                                        [0, '预备'],
+                                        [1, '初一'],
+                                        [2, '初二'],
+                                        [3, '初三'],
+                                        [4, '高一'],
+                                        [5, '高二'],
+                                        [6, '高三']
+                                    ],
+                                    queryMode: 'local'
+                                },{
+                                    xtype: 'combo',
+                                    name: 'classId',
+                                    hideLabel: true,
+                                    editable: false,
+                                    width: 50,
+                                    store: [1,2,3,4,5,6,7,8],
+                                    queryMode: 'local'
+                                },{
+                                    xtype: 'label',
+                                    text: '班',
+                                    labelWidth: 50
+                                },{
+                                    xtype: 'textfield',
+                                    name: 'name',
+                                    labelWidth: 50,
+                                    width: 170,
+                                    fieldLabel: '姓名'
+                                },{
+                                    xtype: 'textfield',
+                                    name: 'no',
+                                    labelWidth: 25,
+                                    width: 145,
+                                    fieldLabel: '学号'
+                                },{
+                                    xtype: 'combo',
+                                    name: 'gender',
+                                    fieldLabel: '性别',
+                                    editable: false,
+                                    labelWidth: 25,
+                                    width: 70,
+                                    store: [
+                                        [1, '男'],
+                                        [0, '女']
+                                    ],
+                                    queryMode: 'local'
+                                },{
+                                    xtype: 'combo',
+                                    name: 'shanghaining',
+                                    fieldLabel: '是否上海户籍',
+                                    labelWidth: 80,
+                                    width: 125,
+                                    editable: false,
+                                    store: [
+                                        [1, '是'],
+                                        [0, '否']
+                                    ],
+                                    queryMode: 'local'
+                                }]
+                            });
+                            
+                            surveyPanel.add({
+                                xtype: 'hidden',
+                                name: 'surveyId',
+                                value: survey.id
+                            });
+                        
+                            var questions = survey.questions;
+                            for(var i = 0; i < questions.length; i++) {
+                                var question = questions[i];
+                                var items = [];
+                                var name = 'question_' + question.type + '_' + question.id;
+                                
+                                var qCt = Ext.create({
+                                    xclass: 'Ext.container.Container',
+                                    style: (i%2==0?'background-color: #fafafa':'')
+                                });
+                                
+                                surveyPanel.add(qCt);
+                                
+                                qCt.add({
+                                    xtype: 'label',
+                                    text: question.desc
+                                });
+                                
+                                if(question.type == 'textarea') {
+                                    qCt.add({
+                                        xtype: 'textareafield',
+                                        name: name
+                                    });
+                                } else if(question.type == 'select') {
+                                    for(var j = 0; j < question.items.length; j++) {
+                                        items.push([question.items[j].id, question.items[j].desc]);
+                                    }
+                                
+                                    qCt.add({
+                                        xtype: 'combobox',
+                                        editable: false,
+                                        name: name,
+                                        store: items,
+                                        queryMode: 'local'
+                                    });
+                                } else {
+                                    for(var j = 0; j < question.items.length; j++) {
+                                        items.push({
+                                            name: name,
+                                            boxLabel: question.items[j].desc,
+                                            inputValue: question.items[j].id
+                                        });
+                                    }
+                                    
+                                    qCt.add({
+                                        xtype: question.type + 'group',
+                                        items: items
+                                    });
+                                }
+                            };
+                        
+                        Ext.resumeLayouts(true);
+                    } else {
+                        Ext.Msg.alert(opFailure, result.error);
+                    }
+                    Ext.getBody().unmask();
+                },
+                failure: function(response, opts) {
+                    Ext.Msg.alert(opFailure, response.responseText);
+                    Ext.getBody().unmask();
+                }
+            });
+        });
+    </script>
   </head>
   <body>
-    <% if(flash.success) { %>
-		<%= flash.success %>
-	<% } %>
-    <% if(flash.error) { %>
-		<%= flash.error %>
-	<% } %>
   </body>
 </html>

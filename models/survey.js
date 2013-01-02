@@ -8,7 +8,9 @@ function Survey() {
 module.exports = Survey;
 
 /*
-select s.name survey_name,
+select s.id survey_id,
+s.name survey_name,
+s.online survey_online,
 q.id question_id,
 q.desc question_desc,
 q.type question_type,
@@ -17,10 +19,12 @@ i.desc item_desc
 from survey s 
 left join question q on s.id = q.s_id
 left join item i on q.id = i.q_id
-where s.id = 1
+where s.id = 1  and s.online = 1
 order by q.id, i.id
 */
-Survey.SELECT_SQL = 'select s.name survey_name, ' +
+Survey.SELECT_SQL = 'select s.id survey_id, ' +
+                    's.name survey_name, ' +
+    				's.online survey_online, ' +
     				'q.id question_id, ' +
     				'q.desc question_desc, ' +
     				'q.type question_type, ' +
@@ -29,8 +33,7 @@ Survey.SELECT_SQL = 'select s.name survey_name, ' +
     				'from survey s ' +
     				'left join question q on s.id = q.s_id ' +
     				'left join item i on q.id = i.q_id ' +
-    				'where s.id = ? ' + 
-    				'order by q.id, i.id';
+                    'where 1 = 1 ';
 
 /*
 INSERT INTO survey_result
@@ -51,14 +54,29 @@ Survey.RESULT_INSERT_SQL = 'INSERT INTO survey_result ' +
                             '(`survey_id`,`year`,`grade`,`class`,`no`,`name`,`shanghaining`,`question_id`,`item_id`,`desc`) ' +
                             'VALUES ';
 
-Survey.get = function(id, callback) {
+Survey.get = function(params, callback) {
     console.log('Survey.get');
 	var connection = db.createConnection();
 	connection.connect();
-	
-    console.log(Survey.SELECT_SQL);
     
-	connection.query(Survey.SELECT_SQL, [id], function(err, rows, fields) {
+    var sql = Survey.SELECT_SQL;
+    var queryParams = [];
+    
+    if(params.id) {
+        sql = sql + 'and s.id = ? ';
+        queryParams.push(params.id);
+    }
+    
+    if(params.online) {
+        sql = sql + 'and s.online = ? ';
+        queryParams.push(params.online);
+    }
+    
+    sql = sql + 'order by q.id, i.id';
+	
+    console.log(sql);
+    
+	connection.query(sql, queryParams, function(err, rows, fields) {
     
 	  if (err) {
 		console.log(err);
@@ -67,11 +85,13 @@ Survey.get = function(id, callback) {
 		return callback('错误的问卷编号');
       }
 	  
-	  var survey = {id: id, questions: []};
+	  var survey = {questions: []};
 	  
 	  for(var i = 0; i < rows.length; i++) {
 		if(i == 0) {
+			survey['id'] = rows[0].survey_id;
 			survey['name'] = rows[0].survey_name;
+            survey['online'] = rows[0].survey_online;
 		}
 		
 		var question;
@@ -130,7 +150,7 @@ Survey.query = function(req, callback) {
             var limit = req.query.limit;
         
             var sql = 'select * from survey';
-            var orderBy = ' order by id desc'
+            var orderBy = ' order by online desc, id desc'
             var pagination = ' limit ' + start + ', ' + limit;
             
             if (name) {
@@ -274,4 +294,36 @@ Survey.delete = function(id, callback) {
     });
     
     connection.end();
+};
+
+Survey.open = function(id, callback) {
+    console.log('Survey.open');
+	var connection = db.createConnection();
+	connection.connect();
+    
+    var sql = 'update survey set online = null';
+    console.log(sql);
+    
+    connection.query(sql, function(err, result) {
+    
+    	if (err) {
+            console.log(err);
+            connection.end();
+            return callback(err);
+    	}
+        
+        var setSql = 'update survey set online = 1 where id = ?'
+        console.log(setSql);
+        
+        connection.query(setSql, [id], function(err, result) {
+            if (err) {
+                console.log(err);
+                return callback(err);
+        	}
+            
+            return callback(err, {success: true});
+        });
+        
+        connection.end();
+    });
 };

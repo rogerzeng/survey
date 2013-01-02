@@ -76,7 +76,7 @@
                                     renderQuestion(Ext.getCmp('surveyDetail'), result.question);
                                     Ext.resumeLayouts(true);
                                 } else {
-                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                    Ext.Msg.alert(opFailure, result.error);
                                 }
                                 
                                 Ext.getBody().unmask();
@@ -97,8 +97,8 @@
         
             var store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
-                fields: ['id', 'name'],
-                pageSize: 3, // items per page
+                fields: ['id', 'name', 'online'],
+                pageSize: 10, // items per page
                 proxy: {
                     type: 'ajax',
                     url: '/management/surveys',  // url that will load data with respect to start and limit params
@@ -157,8 +157,23 @@
                 },{               // Results grid specified as a config object with an xtype of 'grid'
                     xtype: 'grid',
                     itemId: 'surveyGrid',
-                    columns: [{text: '编号',  dataIndex: 'id'},{text: '名称',  dataIndex: 'name'}],
-                    store: store, // A dummy empty data store
+                    columns: [{
+                        text: '编号',
+                        dataIndex: 'id'
+                    },{
+                        text: '名称',
+                        dataIndex: 'name'
+                    },{
+                        text: '在线开放',
+                        dataIndex: 'online',
+                        renderer: function(value) {
+                            if(value) {
+                                return '是';
+                            }
+                            return null;
+                        }
+                    }],
+                    store: store,
                     dockedItems: [{
                         xtype: 'toolbar',
                         dock: 'top',
@@ -175,7 +190,7 @@
                                                 if(result.success) {
                                                     store.reload();
                                                 } else {
-                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                    Ext.Msg.alert(opFailure, result.error);
                                                 }
                                             },
                                             failure: function(response, opts) {
@@ -245,7 +260,7 @@
                                                                                 
                                                                                 Ext.getCmp('surveyName').setText(text);
                                                                             } else {
-                                                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                                                Ext.Msg.alert(opFailure, result.error);
                                                                             }
                                                                         },
                                                                         failure: function(response, opts) {
@@ -279,7 +294,7 @@
                                             
                                             Ext.resumeLayouts(true);
                                         } else {
-                                            Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                            Ext.Msg.alert(opFailure, result.error);
                                         }
                                         Ext.getBody().unmask();
                                     },
@@ -316,7 +331,7 @@
                                                         grid.ownerCt.getComponent('surveyDetail').removeAll();
                                                     }
                                                 } else {
-                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                    Ext.Msg.alert(opFailure, result.error);
                                                 }
                                                 Ext.getBody().unmask();
                                             },
@@ -325,6 +340,35 @@
                                                 Ext.getBody().unmask();
                                             }
                                         });
+                                    }
+                                });
+                            }
+                        },{
+                            text: '开放',
+                            handler: function() {
+                                var grid = this.up().up();
+                                if(!grid.getSelectionModel().hasSelection()) {
+                                    Ext.Msg.alert('开放', '请选择要开放的问卷');
+                                    return;
+                                }
+                                
+                                var surveyId = grid.getSelectionModel().getSelection()[0].get('id');
+                            
+                                Ext.Ajax.request({
+                                    url: '/management/openSurvey',
+                                    params: {id: surveyId},
+                                    success: function(response, opts) {
+                                        var result = Ext.decode(response.responseText);
+                                        if(result.success) {
+                                            store.reload();
+                                        } else {
+                                            Ext.Msg.alert(opFailure, result.error);
+                                        }
+                                        Ext.getBody().unmask();
+                                    },
+                                    failure: function(response, opts) {
+                                        Ext.Msg.alert(opFailure, response.responseText);
+                                        Ext.getBody().unmask();
                                     }
                                 });
                             }
@@ -378,7 +422,7 @@
                                                 if(result.success) {
                                                     questionLabelCmp.setText(text);
                                                 } else {
-                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                    Ext.Msg.alert(opFailure, result.error);
                                                 }
                                             },
                                             failure: function(response, opts) {
@@ -406,7 +450,7 @@
                                                 if(result.success) {
                                                     questionLabelCmp.ownerCt.ownerCt.ownerCt.remove(questionLabelCmp.ownerCt.ownerCt);
                                                 } else {
-                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                    Ext.Msg.alert(opFailure, result.error);
                                                 }
                                                 Ext.getBody().unmask();
                                             },
@@ -449,7 +493,7 @@
                                             if(result.success) {
                                                 renderItem(qCt, qCt.getComponent(0).getComponent(2).getEl().getAttribute('for'), result.item);
                                             } else {
-                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                Ext.Msg.alert(opFailure, result.error);
                                             }
                                         },
                                         failure: function(response, opts) {
@@ -513,7 +557,7 @@
                                                     comboboxCmp.findRecord('id', comboboxCmp.getValue()).set('desc', text);
                                                     comboboxCmp.setRawValue(text);
                                                 } else {
-                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                    Ext.Msg.alert(opFailure, result.error);
                                                 }
                                             },
                                             failure: function(response, opts) {
@@ -546,7 +590,7 @@
                                                     comboboxCmp.getStore().remove(comboboxCmp.findRecord('id', comboboxCmp.getValue()));
                                                     comboboxCmp.setRawValue(null);
                                                 } else {
-                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                    Ext.Msg.alert(opFailure, result.error);
                                                 }
                                                 Ext.getBody().unmask();
                                             },
@@ -593,7 +637,7 @@
                                             if(result.success) {
                                                 itemCmp.boxLabelEl.setHTML(text);
                                             } else {
-                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                Ext.Msg.alert(opFailure, result.error);
                                             }
                                         },
                                         failure: function(response, opts) {
@@ -621,7 +665,7 @@
                                             if(result.success) {
                                                 itemCmp.ownerCt.removeAll();
                                             } else {
-                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                Ext.Msg.alert(opFailure, result.error);
                                             }
                                             Ext.getBody().unmask();
                                         },
@@ -653,89 +697,6 @@
                 }
             };
         });
-        
-        // try to add this to front page        
-        function renderSurvey(id) {
-            Ext.Ajax.request({
-                url: '/management/readSurvey',
-                params: {id: id},
-                success: function(response, opts) {
-                    var result = Ext.decode(response.responseText);
-                    if(result.success) {
-                        var survey = result.survey;
-                        var surveyPanel = grid.ownerCt.getComponent('surveyDetail');
-                        
-                        Ext.suspendLayouts();
-                            surveyPanel.removeAll();
-                        
-                            surveyPanel.add({
-                                fieldLabel: '问卷名称',
-                                labelAlign: 'top',
-                                labelSeparator: '',
-                                xtype: 'textfield',
-                                value: survey.name
-                            });
-                        
-                            var questions = survey.questions;
-                            for(var i = 0; i < questions.length; i++) {
-                                var question = questions[i];
-                                var items = [];
-                                var name = 'question_' + question.type + '_' + question.id;
-                                
-                                if(question.type == 'textarea') {
-                                    surveyPanel.add({
-                                        xtype: 'textareafield',
-                                        name: name,
-                                        fieldLabel: question.desc,
-                                        labelAlign: 'top',
-                                        labelSeparator: ''
-                                    });
-                                } else if(question.type == 'select') {
-                                    for(var j = 0; j < question.items.length; j++) {
-                                        items.push([question.items[j].id, question.items[j].desc]);
-                                    }
-                                
-                                    surveyPanel.add({
-                                        xtype: 'combobox',
-                                        forceSelection: true,
-                                        name: name,
-                                        fieldLabel: question.desc,
-                                        store: items,
-                                        queryMode: 'local',
-                                        labelAlign: 'top',
-                                        labelSeparator: ''
-                                    });
-                                } else {
-                                    for(var j = 0; j < question.items.length; j++) {
-                                        items.push({
-                                            name: name,
-                                            boxLabel: question.items[j].desc,
-                                            inputValue: question.items[j].id
-                                        });
-                                    }
-                                    
-                                    surveyPanel.add({
-                                        xtype: question.type + 'group',
-                                        fieldLabel: question.desc,
-                                        labelAlign: 'top',
-                                        labelSeparator: '',
-                                        items: items
-                                    });
-                                }
-                            };
-                        
-                        Ext.resumeLayouts(true);
-                    } else {
-                        Ext.Msg.alert(opFailure, Ext.encode(result.error));
-                    }
-                    Ext.getBody().unmask();
-                },
-                failure: function(response, opts) {
-                    Ext.Msg.alert(opFailure, response.responseText);
-                    Ext.getBody().unmask();
-                }
-            });
-        }
     </script>
   </head>
   <body>

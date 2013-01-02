@@ -30,6 +30,8 @@ CREATE  TABLE IF NOT EXISTS `survey`.`survey` (
 
   `name` VARCHAR(255) NOT NULL ,
 
+  `online` TINYINT(1) NULL ,
+
   PRIMARY KEY (`id`) ,
 
   UNIQUE INDEX `id_UNIQUE` (`id` ASC) )
@@ -212,7 +214,7 @@ SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
 
-INSERT INTO `survey`.`survey`(`id`, `name`) VALUES (1, '问卷1');
+INSERT INTO `survey`.`survey`(`id`, `name`, `online`) VALUES (1, '问卷1', 1);
 
 INSERT INTO `survey`.`question`(`id`, `s_id`, `type`, `desc`) VALUES (1, 1, 'radio', '单选题');
 INSERT INTO `survey`.`question`(`id`, `s_id`, `type`, `desc`) VALUES (2, 1, 'checkbox', '多选题');

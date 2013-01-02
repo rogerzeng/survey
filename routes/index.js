@@ -32,7 +32,7 @@ exports.survey = function(req, res){
         return res.redirect('error');
     }
     
-	Survey.get(req.params.id, function(err, survey) {
+	Survey.get(req.params, function(err, survey) {
         if(err) {
 			console.log(err);
             req.flash('error', err);
@@ -50,10 +50,10 @@ exports.submit = function(req, res){
         if(err) {
 			console.log(err);
             req.flash('error', err);
-            return res.redirect('error');
+            return res.send({success: false, error: err});
         }
         
         req.flash('success', '提交成功');
-        res.redirect('success');
+        res.send({success: true, msg: '提交成功'});
     });
 };

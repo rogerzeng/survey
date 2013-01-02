@@ -9,7 +9,7 @@
     <h1><%= result.name %></h1>
 	<form action="submit" method="post">
         <input type="hidden" name="surveyId" value="<%=result.id%>"/>
-		<div>
+		<!--div>
 			入学年份:
 			<select name="year">
 				<option value="2012">2012</option>
@@ -36,11 +36,11 @@
 				<option value="1">是</option>
 				<option value="0">否</option>
 			</select>
-		</div>
+		</div-->
 		<% result.questions.forEach(function(question) { %>
 			<% include question %>
 		<% }) %>
-		<div><input type="submit" value="提交"/></div>
+		<!--div><input type="submit" value="提交"/></div-->
 	</form>
   <% } %>
   </body>

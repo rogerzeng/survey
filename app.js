@@ -17,7 +17,6 @@ Array.prototype.containsById = function(id) {
 var express = require('express')
   , util = require('util')
   , routes = require('./routes')
-  , user = require('./routes/user')
   , management = require('./routes/management')
   , http = require('http')
   , path = require('path')
@@ -61,10 +60,12 @@ app.locals({
 app.get('/', routes.index);
 app.get('/success', routes.success);
 app.get('/error', routes.error);
-app.get('/users', user.list);
 
-app.get('/survey/:id', routes.survey);
-app.post('/survey/submit', routes.submit);
+//app.get('/survey/:id', routes.survey);
+//app.post('/survey/submit', routes.submit);
+
+app.post('/online/readSurvey', management.readSurvey);
+app.post('/online/submit', routes.submit);
 
 app.get('/management/login', management.login);
 app.post('/management/login', management.doLogin);
@@ -91,6 +92,7 @@ app.post('/management/createSurvey', management.createSurvey);
 app.post('/management/readSurvey', management.readSurvey);
 app.post('/management/updateSurvey', management.updateSurvey);
 app.post('/management/deleteSurvey', management.deleteSurvey);
+app.post('/management/openSurvey', management.openSurvey);
 
 app.post('/management/createQuestion', management.createQuestion);
 app.post('/management/updateQuestion', management.updateQuestion);
