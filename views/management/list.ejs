@@ -8,9 +8,93 @@
     <!-- Include the translations -->
     <script type="text/javascript" src="/javascripts/ext-4.1.1a/locale/ext-lang-zh_CN.js"></script>
     <script type="text/javascript">
-        var opFailure = '操作失败';
-    
         Ext.onReady(function(){
+            var opFailure = '操作失败';
+            var marginConfig = '5, 5, 5, 0';
+            var newQuestionWin = Ext.create('Ext.window.Window', {
+                title: '新增问题',
+                closable: true,
+                closeAction: 'hide',
+                width: 250,
+                height: 150,
+                layout: {
+                    type: 'border',
+                    padding: 5
+                },
+                items: [{
+                    xtype: 'container',
+                    defaults: {
+                        labelAlign: 'right',
+                        labelWidth: 30
+                    },
+                    items: [{
+                        xtype: 'textfield',
+                        id: 'questionDesc',
+                        fieldLabel: '问题'
+                    },{
+                        xtype: 'combobox',
+                        id: 'questionType',
+                        editable: false,
+                        fieldLabel: '类型',
+                        store: [
+                            ['radio', '单选题'],
+                            ['checkbox', '多选题'],
+                            ['select', '下拉选项题'],
+                            ['textarea', '输入题']
+                        ],
+                        queryMode: 'local'
+                    }]
+                }],
+                buttons: [{
+                    text: '确定',
+                    handler: function() {
+                        var qDesc = Ext.getCmp('questionDesc').getValue();
+                        var qType = Ext.getCmp('questionType').getValue();
+                        
+                        if(!qDesc || !qType) {
+                            Ext.Msg.alert('新增', '请填写问题和选择类型');
+                            return;
+                        }
+                        
+                        Ext.getBody().mask('请稍候...');
+                        
+                        Ext.Ajax.request({
+                            url: '/management/createQuestion',
+                            params: {
+                                surveyId: Ext.getCmp('hiddenSurveyId').getValue(),
+                                desc: qDesc,
+                                type: qType
+                            },
+                            success: function(response, opts) {
+                                var result = Ext.decode(response.responseText);
+                                if(result.success) {
+                                    Ext.getCmp('questionDesc').setValue('');
+                                    Ext.getCmp('questionType').setValue(null);
+                                    newQuestionWin.hide();
+                                    
+                                    Ext.suspendLayouts();
+                                    renderQuestion(Ext.getCmp('surveyDetail'), result.question);
+                                    Ext.resumeLayouts(true);
+                                } else {
+                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                }
+                                
+                                Ext.getBody().unmask();
+                            },
+                            failure: function(response, opts) {
+                                Ext.Msg.alert(opFailure, response.responseText);
+                                Ext.getBody().unmask();
+                            }
+                        });
+                    }
+                },{
+                    text: '取消',
+                    handler: function() {
+                        newQuestionWin.hide();
+                    }
+                }]
+            });
+        
             var store = Ext.create('Ext.data.Store', {
                 autoLoad: true,
                 fields: ['id', 'name'],
@@ -28,7 +112,6 @@
         
             Ext.create('Ext.panel.Panel', {
                 width: '100%',
-                height: 400,
                 renderTo: Ext.getBody(),
                 layout: {
                     type: 'vbox',       // Arrange child items vertically
@@ -68,8 +151,7 @@
                                 }
                             });
                         }
-                    }], // An array of form fields
-                    flex: 1             // Use 1/4 of Container's height (hint to Box layout)
+                    }]
                 },{
                     xtype: 'splitter'   // A splitter between the two child items
                 },{               // Results grid specified as a config object with an xtype of 'grid'
@@ -107,10 +189,105 @@
                             text: '修改',
                             handler: function() {
                                 var grid = this.up().up();
-                                if(grid.getSelectionModel().hasSelection()) {
-                                    Ext.Msg.alert('', grid.getSelectionModel().getSelection()[0].get('id'));
+                                if(!grid.getSelectionModel().hasSelection()) {
+                                    Ext.Msg.alert('修改', '请选择要修改的问卷');
+                                    return;
                                 }
+                            
+                                Ext.getBody().mask('请稍候...');
                                 
+                                var id = grid.getSelectionModel().getSelection()[0].get('id');
+                                
+                                Ext.Ajax.request({
+                                    url: '/management/readSurvey',
+                                    params: {id: id},
+                                    success: function(response, opts) {
+                                        var result = Ext.decode(response.responseText);
+                                        if(result.success) {
+                                            var survey = result.survey;
+                                            var surveyPanel = grid.ownerCt.getComponent('surveyDetail');
+                                            
+                                            Ext.suspendLayouts();
+                                                surveyPanel.removeAll();
+                                                
+                                                surveyPanel.add({
+                                                    xtype: 'hiddenfield',
+                                                    id: 'hiddenSurveyId',
+                                                    value: survey.id
+                                                });
+                                            
+                                                surveyPanel.add({
+                                                    xtype: 'container',
+                                                    layout: {
+                                                        type: 'hbox',
+                                                        align: 'stretch'
+                                                    },
+                                                    width: '100%',
+                                                    defaults: {
+                                                        margin: marginConfig
+                                                    },
+                                                    items: [{
+                                                        xtype: 'button',
+                                                        text: '修改',
+                                                        handler: function() {
+                                                            Ext.Msg.prompt('修改', '请输入问卷名称', function(btn, text) {
+                                                                if (btn == 'ok' && text){
+                                                                    Ext.Ajax.request({
+                                                                        url: '/management/updateSurvey',
+                                                                        params: {
+                                                                            id: survey.id,
+                                                                            name: text
+                                                                        },
+                                                                        success: function(response, opts) {
+                                                                            var result = Ext.decode(response.responseText);
+                                                                            if(result.success) {
+                                                                                store.reload();
+                                                                                
+                                                                                Ext.getCmp('surveyName').setText(text);
+                                                                            } else {
+                                                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                                            }
+                                                                        },
+                                                                        failure: function(response, opts) {
+                                                                            Ext.Msg.alert(opFailure, response.responseText);
+                                                                        }
+                                                                    });
+                                                                }
+                                                            }, window, false, Ext.get('surveyName').getHTML());
+                                                        }
+                                                    },{
+                                                        xtype: 'label',
+                                                        id: 'surveyName',
+                                                        text: survey.name
+                                                    }]
+                                                });
+                                                
+                                                surveyPanel.add({
+                                                    xtype: 'button',
+                                                    text: '新增问题',
+                                                    handler: function() {
+                                                        newQuestionWin.show();
+                                                    }
+                                                });
+                                            
+                                                var questions = survey.questions;
+                                                for(var i = 0; i < questions.length; i++) {
+                                                    var question = questions[i];
+                                                    
+                                                    renderQuestion(surveyPanel, question);
+                                                };
+                                            
+                                            Ext.resumeLayouts(true);
+                                        } else {
+                                            Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                        }
+                                        Ext.getBody().unmask();
+                                    },
+                                    failure: function(response, opts) {
+                                        Ext.Msg.alert(opFailure, response.responseText);
+                                        Ext.getBody().unmask();
+                                    }
+                                });
                             }
                         },{
                             text: '删除',
@@ -123,24 +300,29 @@
                             
                                 Ext.MessageBox.confirm('删除', '删除问卷会同时删除统计结果，确认要继续么？', function(btn) {
                                     if (btn == 'yes') {
-                                        var myMask = new Ext.LoadMask(Ext.getBody(), {msg:"请稍候..."});
-                                        myMask.show();
+                                        Ext.getBody().mask('请稍候...');
+                                        
+                                        var surveyId = grid.getSelectionModel().getSelection()[0].get('id');
                                     
                                         Ext.Ajax.request({
                                             url: '/management/deleteSurvey',
-                                            params: {id: grid.getSelectionModel().getSelection()[0].get('id')},
+                                            params: {id: surveyId},
                                             success: function(response, opts) {
                                                 var result = Ext.decode(response.responseText);
                                                 if(result.success) {
                                                     store.reload();
+                                                    
+                                                    if(Ext.get('hiddenSurveyId') && (Ext.get('hiddenSurveyId').getValue(true) == surveyId)) {
+                                                        grid.ownerCt.getComponent('surveyDetail').removeAll();
+                                                    }
                                                 } else {
                                                     Ext.Msg.alert(opFailure, Ext.encode(result.error));
                                                 }
-                                                myMask.hide();
+                                                Ext.getBody().unmask();
                                             },
                                             failure: function(response, opts) {
                                                 Ext.Msg.alert(opFailure, response.responseText);
-                                                myMask.hide();
+                                                Ext.getBody().unmask();
                                             }
                                         });
                                     }
@@ -152,11 +334,408 @@
                         store: store,   // same store GridPanel is using
                         dock: 'bottom',
                         displayInfo: true
-                    }],
-                    flex: 3                                       // Use 3/4 of Container's height (hint to Box layout)
+                    }]
+                },{
+                    xtype: 'splitter'   // A splitter between the two child items
+                },{
+                    xtype: 'container',
+                    id: 'surveyDetail'
                 }]
             });
+            
+            var renderQuestion = function(surveyPanel, question) {
+                var questionCt = Ext.create('Ext.container.Container', {
+                    xtype: 'container',
+                    id: 'questionCt_' + question.id,
+                    layout: 'vbox',
+                    cls: 'x-panel-body-default ',
+                    //style: (i%2==0?'background-color: #fafafa':''),
+                    defaults: {
+                        margin: marginConfig
+                    },
+                    items: [{
+                        xtype: 'container',
+                        layout: 'hbox',
+                        defaults: {
+                            margin: marginConfig
+                        },
+                        items: [{
+                            xtype: 'button',
+                            text: '修改',
+                            handler: function() {
+                                var questionLabelCmp = this.ownerCt.getComponent(2);
+                                
+                                Ext.Msg.prompt('修改', '请输入问题', function(btn, text) {
+                                    if (btn == 'ok' && text){
+                                        Ext.Ajax.request({
+                                            url: '/management/updateQuestion',
+                                            params: {
+                                                id: questionLabelCmp.getId().substring(9),
+                                                desc: text
+                                            },
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    questionLabelCmp.setText(text);
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                }
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                            }
+                                        });
+                                    }
+                                }, window, false, questionLabelCmp.getEl().getHTML());
+                            }
+                        },{
+                            xtype: 'button',
+                            text: '删除',
+                            handler: function() {
+                                var questionLabelCmp = this.ownerCt.getComponent(2);
+                                
+                                Ext.MessageBox.confirm('删除', '确认要删除问题么？', function(btn) {
+                                    if (btn == 'yes') {
+                                        Ext.getBody().mask('请稍候...');
+                                    
+                                        Ext.Ajax.request({
+                                            url: '/management/deleteQuestion',
+                                            params: {id: questionLabelCmp.getId().substring(9)},
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    questionLabelCmp.ownerCt.ownerCt.ownerCt.remove(questionLabelCmp.ownerCt.ownerCt);
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                }
+                                                Ext.getBody().unmask();
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                                Ext.getBody().unmask();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        },{
+                            xtype: 'label',
+                            id: ('question_' + question.id),
+                            text: question.desc,
+                            forId: question.type
+                        }]
+                    }]
+                });
+                
+                surveyPanel.add(questionCt);
+                
+                if(question.type != 'textarea') {
+                    questionCt.add({
+                        xtype: 'button',
+                        text: '新增选项',
+                        handler: function() {
+                            var qCt = this.ownerCt;
+                        
+                            Ext.Msg.prompt('新增', '请输入选项', function(btn, text) {
+                                if (btn == 'ok' && text){
+                                    Ext.Ajax.request({
+                                        url: '/management/createItem',
+                                        params: {
+                                            questionId: qCt.getId().substring(11),
+                                            desc: text
+                                        },
+                                        success: function(response, opts) {
+                                            var result = Ext.decode(response.responseText);
+                                            if(result.success) {
+                                                renderItem(qCt, qCt.getComponent(0).getComponent(2).getEl().getAttribute('for'), result.item);
+                                            } else {
+                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                            }
+                                        },
+                                        failure: function(response, opts) {
+                                            Ext.Msg.alert(opFailure, response.responseText);
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                if(question.type == 'textarea') {
+                    questionCt.add({
+                        xtype: 'textareafield'
+                    });
+                } else if(question.type == 'select') {
+                    var data = [];
+                    for(var j = 0; j < question.items.length; j++) {
+                        data.push({id: question.items[j].id, desc: question.items[j].desc});
+                    }
+                    
+                    questionCt.add({
+                        xtype: 'container',
+                        layout: 'hbox',
+                        defaults: {
+                            margin: marginConfig
+                        },
+                        items: [{
+                            xtype: 'combobox',
+                            editable: false,
+                            valueField: 'id',
+                            displayField: 'desc',
+                            store: {
+                                xtype: 'store',
+                                fields: ['id', 'desc'],
+                                data: data
+                            },
+                            queryMode: 'local'
+                        },{
+                            xtype: 'button',
+                            text: '修改',
+                            handler: function() {
+                                var comboboxCmp = this.ownerCt.getComponent(0);
+                                
+                                if(!comboboxCmp.getValue()) {
+                                    return;
+                                }
+                                
+                                Ext.Msg.prompt('修改', '请输入选项', function(btn, text) {
+                                    if (btn == 'ok' && text){
+                                        Ext.Ajax.request({
+                                            url: '/management/updateItem',
+                                            params: {
+                                                id: comboboxCmp.getValue(),
+                                                desc: text
+                                            },
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    comboboxCmp.findRecord('id', comboboxCmp.getValue()).set('desc', text);
+                                                    comboboxCmp.setRawValue(text);
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                }
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                            }
+                                        });
+                                    }
+                                }, window, false, comboboxCmp.getRawValue());
+                            }
+                        },{
+                            xtype: 'button',
+                            text: '删除',
+                            handler: function() {
+                                var comboboxCmp = this.ownerCt.getComponent(0);
+                                
+                                if(!comboboxCmp.getValue()) {
+                                    return;
+                                }
+                                
+                                Ext.MessageBox.confirm('删除', '确认要删除选项么？', function(btn) {
+                                    if (btn == 'yes') {
+                                        Ext.getBody().mask('请稍候...');
+                                    
+                                        Ext.Ajax.request({
+                                            url: '/management/deleteItem',
+                                            params: {id: comboboxCmp.getValue()},
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    comboboxCmp.getStore().remove(comboboxCmp.findRecord('id', comboboxCmp.getValue()));
+                                                    comboboxCmp.setRawValue(null);
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                                }
+                                                Ext.getBody().unmask();
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                                Ext.getBody().unmask();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }]
+                    });
+                } else {
+                    for(var j = 0; j < question.items.length; j++) {
+                        renderItem(questionCt, question.type, question.items[j]);
+                    }
+                }
+            };
+            
+            var renderItem = function(questionCt, questionType, item) {
+                if(questionType == 'select') { // combobox
+                    var combobox = questionCt.getComponent(2).getComponent(0);
+                    combobox.getStore().add({id: item.id, desc: item.desc});
+                    combobox.setValue(item.id);
+                } else { // checkbox, radio
+                    var items = [];
+                    items.push({
+                        xtype: 'button',
+                        text: '修改',
+                        handler: function() {
+                            var itemCmp = this.ownerCt.getComponent(2);
+                            
+                            Ext.Msg.prompt('修改', '请输入选项', function(btn, text) {
+                                if (btn == 'ok' && text){
+                                    Ext.Ajax.request({
+                                        url: '/management/updateItem',
+                                        params: {
+                                            id: itemCmp.getInputId().substring(5),
+                                            desc: text
+                                        },
+                                        success: function(response, opts) {
+                                            var result = Ext.decode(response.responseText);
+                                            if(result.success) {
+                                                itemCmp.boxLabelEl.setHTML(text);
+                                            } else {
+                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                            }
+                                        },
+                                        failure: function(response, opts) {
+                                            Ext.Msg.alert(opFailure, response.responseText);
+                                        }
+                                    });
+                                }
+                            }, window, false, itemCmp.boxLabelEl.getHTML());
+                        }
+                    },{
+                        xtype: 'button',
+                        text: '删除',
+                        handler: function() {
+                            var itemCmp = this.ownerCt.getComponent(2);
+                            
+                            Ext.MessageBox.confirm('删除', '确认要删除选项么？', function(btn) {
+                                if (btn == 'yes') {
+                                    Ext.getBody().mask('请稍候...');
+                                
+                                    Ext.Ajax.request({
+                                        url: '/management/deleteItem',
+                                        params: {id: itemCmp.getInputId().substring(5)},
+                                        success: function(response, opts) {
+                                            var result = Ext.decode(response.responseText);
+                                            if(result.success) {
+                                                itemCmp.ownerCt.removeAll();
+                                            } else {
+                                                Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                                            }
+                                            Ext.getBody().unmask();
+                                        },
+                                        failure: function(response, opts) {
+                                            Ext.Msg.alert(opFailure, response.responseText);
+                                            Ext.getBody().unmask();
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    },{
+                        xtype: questionType,
+                        boxLabel: item.desc,
+                        inputId: ('item_' + item.id)
+                    });
+                    
+                    // item container
+                    questionCt.add({
+                        xtype: 'container',
+                        id: 'itemCt_' + item.id,
+                        layout: 'hbox',
+                        defaults: {
+                            margin: marginConfig
+                        },
+                        width: '100%',
+                        items: items
+                    });
+                }
+            };
         });
+        
+        // try to add this to front page        
+        function renderSurvey(id) {
+            Ext.Ajax.request({
+                url: '/management/readSurvey',
+                params: {id: id},
+                success: function(response, opts) {
+                    var result = Ext.decode(response.responseText);
+                    if(result.success) {
+                        var survey = result.survey;
+                        var surveyPanel = grid.ownerCt.getComponent('surveyDetail');
+                        
+                        Ext.suspendLayouts();
+                            surveyPanel.removeAll();
+                        
+                            surveyPanel.add({
+                                fieldLabel: '问卷名称',
+                                labelAlign: 'top',
+                                labelSeparator: '',
+                                xtype: 'textfield',
+                                value: survey.name
+                            });
+                        
+                            var questions = survey.questions;
+                            for(var i = 0; i < questions.length; i++) {
+                                var question = questions[i];
+                                var items = [];
+                                var name = 'question_' + question.type + '_' + question.id;
+                                
+                                if(question.type == 'textarea') {
+                                    surveyPanel.add({
+                                        xtype: 'textareafield',
+                                        name: name,
+                                        fieldLabel: question.desc,
+                                        labelAlign: 'top',
+                                        labelSeparator: ''
+                                    });
+                                } else if(question.type == 'select') {
+                                    for(var j = 0; j < question.items.length; j++) {
+                                        items.push([question.items[j].id, question.items[j].desc]);
+                                    }
+                                
+                                    surveyPanel.add({
+                                        xtype: 'combobox',
+                                        forceSelection: true,
+                                        name: name,
+                                        fieldLabel: question.desc,
+                                        store: items,
+                                        queryMode: 'local',
+                                        labelAlign: 'top',
+                                        labelSeparator: ''
+                                    });
+                                } else {
+                                    for(var j = 0; j < question.items.length; j++) {
+                                        items.push({
+                                            name: name,
+                                            boxLabel: question.items[j].desc,
+                                            inputValue: question.items[j].id
+                                        });
+                                    }
+                                    
+                                    surveyPanel.add({
+                                        xtype: question.type + 'group',
+                                        fieldLabel: question.desc,
+                                        labelAlign: 'top',
+                                        labelSeparator: '',
+                                        items: items
+                                    });
+                                }
+                            };
+                        
+                        Ext.resumeLayouts(true);
+                    } else {
+                        Ext.Msg.alert(opFailure, Ext.encode(result.error));
+                    }
+                    Ext.getBody().unmask();
+                },
+                failure: function(response, opts) {
+                    Ext.Msg.alert(opFailure, response.responseText);
+                    Ext.getBody().unmask();
+                }
+            });
+        }
     </script>
   </head>
   <body>

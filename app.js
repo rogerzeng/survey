@@ -88,8 +88,17 @@ app.get('/management/test', management.test);
 app.get('/management/list', management.list);
 app.get('/management/surveys', management.surveys);
 app.post('/management/createSurvey', management.createSurvey);
+app.post('/management/readSurvey', management.readSurvey);
+app.post('/management/updateSurvey', management.updateSurvey);
 app.post('/management/deleteSurvey', management.deleteSurvey);
 
+app.post('/management/createQuestion', management.createQuestion);
+app.post('/management/updateQuestion', management.updateQuestion);
+app.post('/management/deleteQuestion', management.deleteQuestion);
+
+app.post('/management/createItem', management.createItem);
+app.post('/management/updateItem', management.updateItem);
+app.post('/management/deleteItem', management.deleteItem);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));

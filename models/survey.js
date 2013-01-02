@@ -5,6 +5,8 @@ function Survey() {
 
 };
 
+module.exports = Survey;
+
 /*
 select s.name survey_name,
 q.id question_id,
@@ -16,7 +18,7 @@ from survey s
 left join question q on s.id = q.s_id
 left join item i on q.id = i.q_id
 where s.id = 1
-order by q.id
+order by q.id, i.id
 */
 Survey.SELECT_SQL = 'select s.name survey_name, ' +
     				'q.id question_id, ' +
@@ -28,7 +30,7 @@ Survey.SELECT_SQL = 'select s.name survey_name, ' +
     				'left join question q on s.id = q.s_id ' +
     				'left join item i on q.id = i.q_id ' +
     				'where s.id = ? ' + 
-    				'order by q.id';
+    				'order by q.id, i.id';
 
 /*
 INSERT INTO survey_result
@@ -48,8 +50,6 @@ VALUES
 Survey.RESULT_INSERT_SQL = 'INSERT INTO survey_result ' +
                             '(`survey_id`,`year`,`grade`,`class`,`no`,`name`,`shanghaining`,`question_id`,`item_id`,`desc`) ' +
                             'VALUES ';
-
-module.exports = Survey;
 
 Survey.get = function(id, callback) {
     console.log('Survey.get');
@@ -229,6 +229,27 @@ Survey.create = function(name, callback) {
     	}
         
     	return callback(err, {success: true, id: result.insertId});
+    });
+    
+    connection.end();
+};
+
+Survey.update = function(params, callback) {
+    console.log('Survey.update');
+	var connection = db.createConnection();
+	connection.connect();
+    
+    var sql = 'update survey set name = ? where id = ?';
+    console.log(sql);
+    
+    connection.query(sql, [params.name, params.id], function(err, result) {
+    
+    	if (err) {
+            console.log(err);
+            return callback(err);
+    	}
+        
+    	return callback(err, {success: true});
     });
     
     connection.end();

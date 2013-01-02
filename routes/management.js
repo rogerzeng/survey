@@ -1,5 +1,7 @@
 
-var Survey = require('../models/survey');
+var Survey = require('../models/survey')
+    , Question = require('../models/question')
+    , Item = require('../models/item');
 
 var filePath = 'survey\\routes\\management.js';
 
@@ -31,9 +33,9 @@ exports.surveys = function(req, res){
     
 	Survey.query(req, function(err, result) {
         if(err) {
-			console.log(err);
+            console.log(err);
             req.flash('error', err);
-            return res.send({success: false});
+            return res.send({success: false, error: err});
         }
         
         res.send(result);
@@ -45,7 +47,39 @@ exports.createSurvey = function(req, res){
     
 	Survey.create(req.body.name, function(err, result) {
         if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.readSurvey = function(req, res){
+    console.log(filePath + ' exports.readSurvey');
+    
+	Survey.get(req.body.id, function(err, survey) {
+        if(err) {
 			console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        var result = {success: true, survey: survey}
+        
+        console.log(result);
+        
+        res.send(result);
+    });
+};
+
+exports.updateSurvey = function(req, res){
+    console.log(filePath + ' exports.updateSurvey');
+    
+	Survey.update(req.body, function(err, result) {
+        if(err) {
+            console.log(err);
             req.flash('error', err);
             return res.send({success: false, error: err});
         }
@@ -59,12 +93,94 @@ exports.deleteSurvey = function(req, res){
     
 	Survey.delete(req.body.id, function(err, result) {
         if(err) {
-			console.log(err);
+            console.log(err);
             req.flash('error', err);
             return res.send({success: false, error: err});
         }
         
-        console.log(result);
+        res.send(result);
+    });
+};
+
+exports.createQuestion = function(req, res){
+    console.log(filePath + ' exports.createQuestion');
+    
+	Question.create(req.body, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.updateQuestion = function(req, res){
+    console.log(filePath + ' exports.updateQuestion');
+    
+	Question.update(req.body, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.deleteQuestion = function(req, res){
+    console.log(filePath + ' exports.deleteQuestion');
+    
+	Question.delete(req.body.id, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.createItem = function(req, res){
+    console.log(filePath + ' exports.createItem');
+    
+	Item.create(req.body, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.updateItem = function(req, res){
+    console.log(filePath + ' exports.updateItem');
+    
+	Item.update(req.body, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.deleteItem = function(req, res){
+    console.log(filePath + ' exports.deleteItem');
+    
+	Item.delete(req.body.id, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
         
         res.send(result);
     });
