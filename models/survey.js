@@ -1,5 +1,8 @@
 ﻿
-var db = require('./db');
+var db = require('./db')
+  , Question = require('./question')
+  , Item = require('./item')
+  , util = require('util');
 
 function Survey() {
 
@@ -326,4 +329,53 @@ Survey.open = function(id, callback) {
         
         connection.end();
     });
+};
+
+Survey.copy = function(id, callback) {
+    console.log('Survey.copy');
+	var connection = db.createConnection();
+	connection.connect();
+    
+    var sql = 'insert into survey(name) select concat(\'复制_\', name) name from survey where id = ?';
+    console.log(sql);
+    
+    connection.query(sql, [id], function(err, result) {
+    
+    	if (err) {
+            console.log(err);
+            connection.end();
+            return callback(err);
+    	}
+        
+        var s_id = result.insertId;
+        
+        var connection2 = db.createConnection();
+        connection2.connect();
+        
+        sql = 'select id, type, `desc` from question where s_id = ?';
+        console.log(sql);
+        
+        var query = connection2.query(sql, [id]);
+        query.on('error', function(err) {
+            console.log(err);
+        }).on('result', function(row) {
+            console.log(util.inspect(row, true));
+            row.surveyId = s_id;
+            Question.create(row, function(err, rlt) {
+                if(!err) {
+                    var connection3 = db.createConnection();
+                    connection3.connect();
+                    var insertItemSql = 'insert into item (q_id, `desc`) select ' + rlt.question.id + ', `desc` from item where q_id = ' + row.id;
+                    console.log(insertItemSql);
+                    connection3.query(insertItemSql);
+                    connection3.end();
+                }
+            });
+        }).on('end', function() {
+            connection2.end();
+            return callback(err, {success: true});
+        });
+    });
+    
+    connection.end();
 };

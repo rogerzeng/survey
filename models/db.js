@@ -27,7 +27,8 @@ db.createConnection = function() {
 	  host : 'localhost',
 	  user : 'root',
 	  password : 'root',
-	  database : 'survey'
+	  database : 'survey',
+      multipleStatements: true
 	});
 	
 	handleDisconnect(connection);

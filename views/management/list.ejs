@@ -74,6 +74,17 @@
                                     
                                     Ext.suspendLayouts();
                                     renderQuestion(Ext.getCmp('surveyDetail'), result.question);
+                                    Ext.getCmp('surveyDetail').remove('addQuestionBtn');
+                                    Ext.getCmp('surveyDetail').add({
+                                        xtype: 'button',
+                                        id: 'addQuestionBtn',
+                                        dock: 'bottom',
+                                        text: '新增问题',
+                                        handler: function() {
+                                            newQuestionWin.show();
+                                        }
+                                    });
+                                                
                                     Ext.resumeLayouts(true);
                                 } else {
                                     Ext.Msg.alert(opFailure, result.error);
@@ -125,7 +136,7 @@
                         itemId: 'surveyName',
                         fieldLabel: '问卷名称',
                         xtype: 'textfield'
-                    },{
+                    /*},{
                         text: '测试',
                         xtype: 'button',
                         handler: function() {
@@ -141,7 +152,7 @@
                                 }
                             });
                         }
-                    },{
+                    */},{
                         text: '查询',
                         xtype: 'button',
                         handler: function() {
@@ -276,14 +287,6 @@
                                                         text: survey.name
                                                     }]
                                                 });
-                                                
-                                                surveyPanel.add({
-                                                    xtype: 'button',
-                                                    text: '新增问题',
-                                                    handler: function() {
-                                                        newQuestionWin.show();
-                                                    }
-                                                });
                                             
                                                 var questions = survey.questions;
                                                 for(var i = 0; i < questions.length; i++) {
@@ -291,6 +294,16 @@
                                                     
                                                     renderQuestion(surveyPanel, question);
                                                 };
+                                                
+                                                surveyPanel.add({
+                                                    xtype: 'button',
+                                                    id: 'addQuestionBtn',
+                                                    dock: 'bottom',
+                                                    text: '新增问题',
+                                                    handler: function() {
+                                                        newQuestionWin.show();
+                                                    }
+                                                });
                                             
                                             Ext.resumeLayouts(true);
                                         } else {
@@ -369,6 +382,41 @@
                                     failure: function(response, opts) {
                                         Ext.Msg.alert(opFailure, response.responseText);
                                         Ext.getBody().unmask();
+                                    }
+                                });
+                            }
+                        },{
+                            text: '复制',
+                            handler: function() {
+                                var grid = this.up().up();
+                                if(!grid.getSelectionModel().hasSelection()) {
+                                    Ext.Msg.alert('复制', '请选择要复制的问卷');
+                                    return;
+                                }
+                            
+                                Ext.MessageBox.confirm('复制', '确认要继续么？', function(btn) {
+                                    if (btn == 'yes') {
+                                        Ext.getBody().mask('请稍候...');
+                                        
+                                        var surveyId = grid.getSelectionModel().getSelection()[0].get('id');
+                                    
+                                        Ext.Ajax.request({
+                                            url: '/management/copySurvey',
+                                            params: {id: surveyId},
+                                            success: function(response, opts) {
+                                                var result = Ext.decode(response.responseText);
+                                                if(result.success) {
+                                                    store.reload();
+                                                } else {
+                                                    Ext.Msg.alert(opFailure, result.error);
+                                                }
+                                                Ext.getBody().unmask();
+                                            },
+                                            failure: function(response, opts) {
+                                                Ext.Msg.alert(opFailure, response.responseText);
+                                                Ext.getBody().unmask();
+                                            }
+                                        });
                                     }
                                 });
                             }

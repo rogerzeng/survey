@@ -14,7 +14,7 @@ exports.login = function(req, res){
 exports.doLogin = function(req, res){
     console.log(filePath + ' exports.doLogin');
     
-    if(req.body.pwd == '123') {
+    if(req.body.pwd == 'tjs') {
         req.session.login = true;
         return res.redirect('/management/list');
     }
@@ -106,6 +106,20 @@ exports.openSurvey = function(req, res){
     console.log(filePath + ' exports.openSurvey');
     
 	Survey.open(req.body.id, function(err, result) {
+        if(err) {
+            console.log(err);
+            req.flash('error', err);
+            return res.send({success: false, error: err});
+        }
+        
+        res.send(result);
+    });
+};
+
+exports.copySurvey = function(req, res){
+    console.log(filePath + ' exports.copySurvey');
+    
+	Survey.copy(req.body.id, function(err, result) {
         if(err) {
             console.log(err);
             req.flash('error', err);

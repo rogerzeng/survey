@@ -35,6 +35,7 @@
                             },
                             buttons: [{
                                 text: '提交',
+                                id: 'submitBtn',
                                 align: 'center',
                                 //formBind: true, //only enabled once the form is valid
                                 handler: function(){
@@ -43,6 +44,7 @@
                                         form.submit({
                                             success: function(form, action) {
                                                Ext.Msg.alert('Success', action.result.msg);
+                                               window.location.href="/success";
                                             },
                                             failure: function(form, action) {
                                                 Ext.Msg.alert('Failed', action.result.error);
@@ -154,7 +156,7 @@
                                 
                                 var qCt = Ext.create({
                                     xclass: 'Ext.container.Container',
-                                    style: (i%2==0?'background-color: #fafafa':'')
+                                    style: (i%2==0?'background-color: #f3f3f3':'')
                                 });
                                 
                                 surveyPanel.add(qCt);
@@ -192,6 +194,7 @@
                                     
                                     qCt.add({
                                         xtype: question.type + 'group',
+                                        width: '100%',
                                         items: items
                                     });
                                 }

@@ -70,7 +70,7 @@ app.post('/online/submit', routes.submit);
 app.get('/management/login', management.login);
 app.post('/management/login', management.doLogin);
 
-/*
+
 app.get('/management/*', function(req, res, next) { // login check
     if(!req.session.login) {
         if(req.xhr) { // ajax request
@@ -82,7 +82,6 @@ app.get('/management/*', function(req, res, next) { // login check
     
     next();
 });
-*/
 
 app.get('/management/test', management.test);
 
@@ -93,6 +92,7 @@ app.post('/management/readSurvey', management.readSurvey);
 app.post('/management/updateSurvey', management.updateSurvey);
 app.post('/management/deleteSurvey', management.deleteSurvey);
 app.post('/management/openSurvey', management.openSurvey);
+app.post('/management/copySurvey', management.copySurvey);
 
 app.post('/management/createQuestion', management.createQuestion);
 app.post('/management/updateQuestion', management.updateQuestion);
